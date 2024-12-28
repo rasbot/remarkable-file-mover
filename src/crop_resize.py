@@ -2,6 +2,7 @@ import argparse
 import os
 
 from PIL import Image
+from typing import Literal
 
 
 def get_processed_output_path(input_path: str, appended_txt: str = "_processed") -> str:
@@ -52,6 +53,93 @@ def add_border(
     bordered.paste(image, (x, y))
 
     return bordered
+
+
+def crop_image(
+    image_path: str,
+    target_width: int,
+    target_height: int,
+    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
+    border_width: int = None,
+) -> Image:
+    """Crop an image to the ratio of the target dimensions.
+    Uses the border width to get the right dimensions. Can pass `crop_position`
+    to determine what part of the image kept in the final crop.
+
+    Ex: `crop_position` = "center" will crop the height / width relative to the center
+    of the image.
+    `crop_position` = "left" will crop the image with respect to the leftmost part
+    of the image.
+    Etc...
+
+    Args:
+        image_path (str): Full path to image file.
+        target_width (int): Target height of the final image.
+        target_height (int): Target width of the final image.
+        crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
+            where to crop the image relative to.
+            Defaults to "center".
+        border_width (int, optional): Width of the border.
+            Defaults to None.
+
+    Returns:
+        Image: Cropped image.
+    """
+    img = Image.open(image_path)
+
+    # Convert to RGB if necessary (handles PNG with transparency)
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # If border is specified, adjust target dimensions for initial resize
+    if border_width is not None:
+        resize_width = target_width - (2 * border_width)
+        resize_height = target_height - (2 * border_width)
+    else:
+        resize_width = target_width
+        resize_height = target_height
+
+    # Calculate target aspect ratio
+    target_ratio = resize_width / resize_height
+
+    # Calculate current image aspect ratio
+    width, height = img.size
+    current_ratio = width / height
+
+    # Calculate dimensions for cropping
+    if current_ratio > target_ratio:
+        # Image is wider than target ratio
+        new_width = int(height * target_ratio)
+        new_height = height
+        # Calculate crop position
+        if crop_position == "left":
+            left = 0
+        elif crop_position == "right":
+            left = width - new_width
+        else:  # center
+            left = (width - new_width) // 2
+        top = 0
+        right = left + new_width
+        bottom = height
+    else:
+        # Image is taller than target ratio
+        new_width = width
+        new_height = int(width / target_ratio)
+        left = 0
+        # Calculate crop position
+        if crop_position == "top":
+            top = 0
+        elif crop_position == "bottom":
+            top = height - new_height
+        else:  # center
+            top = (height - new_height) // 2
+        right = width
+        bottom = top + new_height
+
+    # Crop the image
+    cropped = img.crop((left, top, right, bottom))
+
+    return cropped
 
 
 def main():
