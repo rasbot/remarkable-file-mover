@@ -22,6 +22,38 @@ def get_processed_output_path(input_path: str, appended_txt: str = "_processed")
     return f"{base}{appended_txt}{ext}"
 
 
+def add_border(
+    image: Image, border_width: int, target_width: int, target_height: int
+) -> Image:
+    """Add a white border to a resized / processed image. The `border_width` will
+    be the same for the height and with border lines.
+
+    Args:
+        image (Image): PIL Image that has been resized / processed.
+        border_width (int): Width of border in pixels.
+        target_width (int): Target width of the final image.
+        target_height (int): Target height of the final image.
+
+    Returns:
+        Image: Resized / processed image with a white border.
+    """
+    # Do not add a border if it is not > 0
+    if border_width <= 0:
+        return image
+
+    # Create new image with target dimensions
+    bordered = Image.new("RGB", (target_width, target_height), "white")
+
+    # Calculate position to paste the image (these are the same values)
+    x = border_width
+    y = border_width
+
+    # Paste the image
+    bordered.paste(image, (x, y))
+
+    return bordered
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Crop and resize an image to specific dimensions."
