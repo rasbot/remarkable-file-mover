@@ -1,8 +1,8 @@
 import argparse
 import os
+from typing import Literal
 
 from PIL import Image
-from typing import Literal
 
 
 def get_processed_output_path(input_path: str, appended_txt: str = "_processed") -> str:
