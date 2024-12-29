@@ -58,3 +58,15 @@ if %ERRORLEVEL% NEQ 0 (
     echo Failed to prepare reMarkable filesystem
     goto :EOF
 )
+
+rem Attempt file transfer
+"%PUTTY_PATH%\pscp.exe" -pw %REMARKABLE_PASSWORD% -P 22 "%SOURCE_PATH%" root@%REMARKABLE_IP%:%DESTINATION_PATH%
+if %ERRORLEVEL% EQU 0 (
+    echo Transfer completed successfully
+) else (
+    echo Failed to transfer file
+)
+
+echo -----PROGRAM FINISHED-----
+
+endlocal
