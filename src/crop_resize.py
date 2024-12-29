@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Literal
+from typing import Dict, Literal
 
 from PIL import Image
 
@@ -55,12 +55,25 @@ def add_border(
     return bordered
 
 
-def crop_image(
-    image_path: str,
+def get_resized_dimensions(
     target_width: int,
     target_height: int,
-    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
+) -> Dict[str, int]:
+    # If border is specified, adjust target dimensions for initial resize
+    if border_width is not None:
+        resize_width = target_width - (2 * border_width)
+        resize_height = target_height - (2 * border_width)
+    else:
+        resize_width = target_width
+        resize_height = target_height
+    return {"width": resize_width, "height": resize_height}
+
+
+def crop_image(
+    image_path: str,
+    target_dimensions_dict: Dict[str, int],
+    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
 ) -> Image:
     """Crop an image to the ratio of the target dimensions.
     Uses the border width to get the right dimensions. Can pass `crop_position`
@@ -74,13 +87,10 @@ def crop_image(
 
     Args:
         image_path (str): Full path to image file.
-        target_width (int): Target height of the final image.
-        target_height (int): Target width of the final image.
+        target_dimensions_dict (Dict[str, int]): Dict of target width and height.
         crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
             where to crop the image relative to.
             Defaults to "center".
-        border_width (int, optional): Width of the border.
-            Defaults to None.
 
     Returns:
         Image: Cropped image.
@@ -91,16 +101,8 @@ def crop_image(
     if img.mode != "RGB":
         img = img.convert("RGB")
 
-    # If border is specified, adjust target dimensions for initial resize
-    if border_width is not None:
-        resize_width = target_width - (2 * border_width)
-        resize_height = target_height - (2 * border_width)
-    else:
-        resize_width = target_width
-        resize_height = target_height
-
     # Calculate target aspect ratio
-    target_ratio = resize_width / resize_height
+    target_ratio = target_dimensions_dict["width"] / target_dimensions_dict["height"]
 
     # Calculate current image aspect ratio
     width, height = img.size
@@ -140,6 +142,40 @@ def crop_image(
     cropped = img.crop((left, top, right, bottom))
 
     return cropped
+
+
+def resize_image(cropped_img: Image, resize_width: int, resize_height: int) -> Image:
+    """Resize the image to the intended final dimensions.
+
+    Args:
+        cropped_img (Image): Cropped Image.
+        resize_width (int): Target width.
+        resize_height (int): Target height.
+
+    Returns:
+        Image: Resized image.
+    """
+    return cropped_img.resize((resize_width, resize_height), Image.Resampling.LANCZOS)
+
+
+def process_image(
+    image_path: str,
+    target_width: int,
+    target_height: int,
+    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
+    border_width: int = None,
+):
+    cropped_img = crop_image(
+        image_path=image_path,
+        target_width=target_width,
+        target_height=target_height,
+        crop_position=crop_position,
+        border_width=border_width,
+    )
+
+    resized_img = resize_image(
+        cropped_img=cropped_img, resize_width=None, resize_height=None
+    )
 
 
 def main():
