@@ -1,7 +1,6 @@
 """Process an image to set dimension by cropping, resizing, and adding an optional border."""
 
 import argparse
-import os
 from pathlib import Path
 from typing import Literal, TypedDict
 
