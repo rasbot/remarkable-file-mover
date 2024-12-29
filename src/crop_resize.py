@@ -49,11 +49,11 @@ def add_border(
     )
 
     # Calculate position to paste the image (these are the same values)
-    x = border_width
-    y = border_width
+    x_value = border_width
+    y_value = border_width
 
     # Paste the image
-    bordered.paste(image, (x, y))
+    bordered.paste(image, (x_value, y_value))
 
     return bordered
 
@@ -63,6 +63,18 @@ def get_resized_dimensions(
     target_height: int,
     border_width: int = None,
 ) -> Dict[str, int]:
+    """Get image dimenions for image depending on if a border is
+    being added.
+
+    Args:
+        target_width (int): Target width.
+        target_height (int): Target height.
+        border_width (int, optional): Border width.
+            Defaults to None.
+
+    Returns:
+        Dict[str, int]: Dict of "width" and "height" values.
+    """
     # If border is specified, adjust target dimensions for initial resize
     if border_width is not None:
         resize_width = target_width - (2 * border_width)
