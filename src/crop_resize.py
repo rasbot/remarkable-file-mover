@@ -1,3 +1,5 @@
+"""Process an image to set dimension by cropping, resizing, and adding an optional border."""
+
 import argparse
 import os
 from typing import Dict, Literal
@@ -24,7 +26,7 @@ def get_processed_output_path(input_path: str, appended_txt: str = "_processed")
 
 
 def add_border(
-    image: Image, border_width: int, target_width: int, target_height: int
+    image: Image, border_width: int, target_dim_dict: Dict[str, int]
 ) -> Image:
     """Add a white border to a resized / processed image. The `border_width` will
     be the same for the height and with border lines.
@@ -32,8 +34,7 @@ def add_border(
     Args:
         image (Image): PIL Image that has been resized / processed.
         border_width (int): Width of border in pixels.
-        target_width (int): Target width of the final image.
-        target_height (int): Target height of the final image.
+        targetdim_dict (Dict[str, int]): Target width and height dict.
 
     Returns:
         Image: Resized / processed image with a white border.
@@ -43,7 +44,9 @@ def add_border(
         return image
 
     # Create new image with target dimensions
-    bordered = Image.new("RGB", (target_width, target_height), "white")
+    bordered = Image.new(
+        "RGB", (target_dim_dict["width"], target_dim_dict["height"]), "white"
+    )
 
     # Calculate position to paste the image (these are the same values)
     x = border_width
@@ -144,18 +147,19 @@ def crop_image(
     return cropped
 
 
-def resize_image(cropped_img: Image, resize_width: int, resize_height: int) -> Image:
+def resize_image(cropped_img: Image, target_dim_dict: Dict[str, int]) -> Image:
     """Resize the image to the intended final dimensions.
 
     Args:
         cropped_img (Image): Cropped Image.
-        resize_width (int): Target width.
-        resize_height (int): Target height.
+        target_dim_dict (Dict[str, int]): Dict with target width and height.
 
     Returns:
         Image: Resized image.
     """
-    return cropped_img.resize((resize_width, resize_height), Image.Resampling.LANCZOS)
+    return cropped_img.resize(
+        (target_dim_dict["width"], target_dim_dict["height"]), Image.Resampling.LANCZOS
+    )
 
 
 def process_image(
@@ -164,21 +168,48 @@ def process_image(
     target_height: int,
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
-):
-    cropped_img = crop_image(
-        image_path=image_path,
+) -> Image:
+    """Process image by cropping it, resizing it, and adding an optional white border.
+
+    Args:
+        image_path (str): Full path to image file.
+        target_width (int): Target width of final image.
+        target_height (int): Target height of final image.
+        crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
+            where to crop the image relative to. Defaults to "center".
+        border_width (int, optional): Width of border.
+            Defaults to None.
+
+    Returns:
+        Image: Fully processed image.
+    """
+    target_dim_dict = get_resized_dimensions(
         target_width=target_width,
         target_height=target_height,
-        crop_position=crop_position,
         border_width=border_width,
     )
-
-    resized_img = resize_image(
-        cropped_img=cropped_img, resize_width=None, resize_height=None
+    cropped_img = crop_image(
+        image_path=image_path,
+        target_dimensions_dict=target_dim_dict,
+        crop_position=crop_position,
     )
+
+    prcessed_img = resize_image(
+        cropped_img=cropped_img, target_dim_dict=target_dim_dict
+    )
+
+    if border_width is not None:
+        prcessed_img = add_border(
+            image=prcessed_img,
+            border_width=border_width,
+            target_dim_dict=target_dim_dict,
+        )
+
+    return prcessed_img
 
 
 def main():
+    """Main function of the script."""
     parser = argparse.ArgumentParser(
         description="Crop and resize an image to specific dimensions."
     )
