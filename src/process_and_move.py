@@ -1,4 +1,6 @@
 import argparse
+from pathlib import Path
+from typing import Literal
 import os
 
 from src.constants import CONFIG_PATH
@@ -7,13 +9,31 @@ from src.move_file import get_destination_path, move_file, ProtectedFile
 
 
 def process_and_move(
-    source_path: str,
+    source_path: Path,
     width: int,
     height: int,
-    position: str,
-    border: int,
+    position: Literal["center", "left", "right", "top", "bottom"] = "center",
+    border: int = None,
     is_overwritable: bool = False,
-):
+) -> None:
+    """Process an image and move / rename it.
+
+    Args:
+        source_path (Path): Initial source image path.
+        width (int): Width of final image.
+        height (int): Height of final image.
+        position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
+            where to crop the image relative to. Defaults to "center".
+        border (int): Border thickness if needed.
+            Defaults to None.
+        is_overwritable (bool, optional): If False, raise an exception if
+            the file exists. If True, write the file regardless.
+            Defaults to False.
+
+    Raises:
+        ProtectedFile: Raise if a file exists and `is_overwritable` = False
+            to prevent it from being overwritten.
+    """
     processed_path = get_processed_output_path(input_path=source_path)
     # make sure we can overwrite the file if it exists before processing
     if not is_overwritable and os.path.exists(processed_path):
