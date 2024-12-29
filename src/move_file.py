@@ -52,6 +52,10 @@ def move_file(
         is_overwritable (bool, optional): If False, raise an exception if
             the file exists. If True, write the file regardless.
             Defaults to False.
+
+    Raises:
+        ProtectedFile: Raise if a file exists and `is_overwritable` = False
+            to prevent it from being overwritten.
     """
     if not is_overwritable and os.path.exists(destination_path):
         raise ProtectedFile(file_path=destination_path)
