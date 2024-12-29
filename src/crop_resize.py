@@ -2,6 +2,7 @@
 
 import argparse
 import os
+from pathlib import Path
 from typing import TypedDict, Literal
 
 from PIL import Image as PILImage
@@ -18,22 +19,25 @@ class DimensionsDict(TypedDict):
     height: int
 
 
-def get_processed_output_path(input_path: str, appended_txt: str = "_processed") -> str:
+def get_processed_output_path(
+    input_path: Path, appended_txt: str = "_processed"
+) -> Path:
     """Get the output path of a path string by appending a string to the
     file name.
 
     Ex: "my_dir/my_other_dir/my_file.txt" -> "my_dir/my_other_dir/my_file_processed.txt"
 
     Args:
-        input_path (str): Full path string.
+        input_path (Path): Full path string.
         appended_txt (str, optional): Text to append to file name.
             Defaults to "_processed".
 
     Returns:
-        str: output path string with appended text.
+        Path: output path string with appended text.
     """
-    base, ext = os.path.splitext(input_path)
-    return f"{base}{appended_txt}{ext}"
+    if isinstance(input_path, str):
+        input_path = Path(input_path)
+    return input_path.with_name(input_path.stem + appended_txt + input_path.suffix)
 
 
 def add_border(
@@ -187,33 +191,36 @@ def resize_image(cropped_img: PILImage, resized_dim_dict: DimensionsDict) -> PIL
     )
 
 
-def save_image(processed_img: PILImage, output_path: str) -> None:
+def save_image(processed_img: PILImage, output_path: Path) -> None:
     """Save the processed image.
 
     Args:
         processed_img (PILImage): Processed image.
-        output_path (str): File path to save file to.
+        output_path (Path): File path to save file to.
     """
     processed_img.save(output_path)
     print(f"Successfully processed image: {output_path}")
 
 
 def process_image(
-    image_path: str,
+    image_path: Path,
     target_width: int,
     target_height: int,
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
+    save_path: Path = None,
 ) -> PILImage:
     """Process image by cropping it, resizing it, and adding an optional white border.
 
     Args:
-        image_path (str): Full path to image file.
+        image_path (Path): Full path to image file.
         target_width (int): Target width of final image.
         target_height (int): Target height of final image.
         crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
             where to crop the image relative to. Defaults to "center".
         border_width (int, optional): Width of border.
+            Defaults to None.
+        save_path (Path, optional): Save path for file.
             Defaults to None.
 
     Returns:
@@ -243,9 +250,10 @@ def process_image(
             target_height=target_height,
         )
 
-    output_path = get_processed_output_path(input_path=image_path)
+    if not save_path:
+        save_path = get_processed_output_path(input_path=image_path)
 
-    save_image(processed_img=processed_img, output_path=output_path)
+    save_image(processed_img=processed_img, output_path=save_path)
 
 
 def main():
@@ -279,7 +287,7 @@ def main():
     )
 
     args = parser.parse_args()
-    input_file_path = args.source
+    input_file_path = Path(args.source)
     width = args.width
     height = args.height
     position = args.position
