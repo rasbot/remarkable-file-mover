@@ -1,11 +1,11 @@
 import argparse
+import os
 from pathlib import Path
 from typing import Literal
-import os
 
 from src.constants import CONFIG_PATH
 from src.crop_resize import get_processed_output_path, process_image
-from src.move_file import get_destination_path, move_file, ProtectedFile
+from src.move_file import ProtectedFile, get_destination_path, move_file
 
 
 def process_and_move(

@@ -3,7 +3,7 @@
 import argparse
 import os
 from pathlib import Path
-from typing import TypedDict, Literal
+from typing import Literal, TypedDict
 
 from PIL import Image as PILImage
 
