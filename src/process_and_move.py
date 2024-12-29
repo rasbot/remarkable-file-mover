@@ -1,8 +1,9 @@
 import argparse
+import os
 
 from src.constants import CONFIG_PATH
 from src.crop_resize import get_processed_output_path, process_image
-from src.move_file import get_destination_path, move_file
+from src.move_file import get_destination_path, move_file, ProtectedFile
 
 
 def process_and_move(
@@ -11,8 +12,12 @@ def process_and_move(
     height: int,
     position: str,
     border: int,
+    is_overwritable: bool = False,
 ):
     processed_path = get_processed_output_path(input_path=source_path)
+    # make sure we can overwrite the file if it exists before processing
+    if not is_overwritable and os.path.exists(processed_path):
+        raise ProtectedFile(file_path=processed_path)
     process_image(
         image_path=source_path,
         target_width=width,
@@ -26,6 +31,7 @@ def process_and_move(
 
 
 def main():
+    """Main function to process and save image."""
     parser = argparse.ArgumentParser(
         description="Crop and resize an image to specific dimensions."
     )
@@ -53,6 +59,12 @@ def main():
         const=30,
         help="Add white border with specified width (default: 30 if flag is used)",
     )
+    parser.add_argument(
+        "--overwrite",
+        "-o",
+        action="store_true",
+        help="If passed, overwrite image if it exists.",
+    )
 
     args = parser.parse_args()
     input_file_path = args.source
@@ -60,6 +72,7 @@ def main():
     height = args.height
     position = args.position
     border = args.border
+    overwrite = args.overwrite
 
     process_and_move(
         source_path=input_file_path,
@@ -67,6 +80,7 @@ def main():
         height=height,
         position=position,
         border=border,
+        is_overwritable=overwrite,
     )
 
 
