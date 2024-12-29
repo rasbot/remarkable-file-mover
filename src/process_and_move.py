@@ -49,7 +49,11 @@ def process_and_move(
         save_path=processed_path,
     )
     destination_path = get_destination_path(config_path=CONFIG_PATH)
-    move_file(source_path=processed_path, destination_path=destination_path)
+    move_file(
+        source_path=processed_path,
+        destination_path=destination_path,
+        is_overwritable=is_overwritable,
+    )
 
 
 def main():
