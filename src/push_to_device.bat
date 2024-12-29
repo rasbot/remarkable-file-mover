@@ -42,3 +42,19 @@ if not defined PUTTY_PATH (
     echo PUTTY_PATH not set in config file
     exit /b 1
 )
+
+rem Test connection with timeout (5 seconds)
+ping -n 1 -w 5000 %REMARKABLE_IP% > nul
+if %ERRORLEVEL% NEQ 0 (
+    echo Cannot reach reMarkable tablet at %REMARKABLE_IP%
+    echo Please check USB connection and try again
+    goto :EOF
+)
+
+rem Remount filesystem as read-write and prepare directory (commands chained with &&)
+"%PUTTY_PATH%\plink.exe" -batch -pw %REMARKABLE_PASSWORD% -P 22 root@%REMARKABLE_IP% "mount -o remount,rw / && mkdir -p %DESTINATION_DIR% && chmod 777 %DESTINATION_DIR%" -connect-timeout 5
+
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to prepare reMarkable filesystem
+    goto :EOF
+)
