@@ -7,6 +7,19 @@ from pathlib import Path
 from src.constants import CONFIG_PATH
 
 
+class ProtectedFile(Exception):
+    """Error class to handle protected file."""
+
+    def __init__(self, file_path: Path):
+        self.file_path = file_path
+        self.message = (
+            f"File path {file_path} exists and is protected from being overwritten. "
+            "Move the existing file or pass `is_overwritable` = True in move_file."
+        )
+
+        super().__init__(self.message)
+
+
 def get_destination_path(config_path: Path) -> Path:
     """Read in the value of the desitination path from
     the config file (value for `SOURCE_PATH` in config).
@@ -27,14 +40,21 @@ def get_destination_path(config_path: Path) -> Path:
     return Path(destination_path)
 
 
-def move_file(source_path: Path, destination_path: Path) -> None:
+def move_file(
+    source_path: Path, destination_path: Path, is_overwritable: bool = False
+) -> None:
     """Move a source file (full file path) to a destination
     (full file path).
 
     Args:
         source_path (Path): Source file path.
         destination_path (Path): Destination file path.
+        is_overwritable (bool, optional): If False, raise an exception if
+            the file exists. If True, write the file regardless.
+            Defaults to False.
     """
+    if not is_overwritable and os.path.exists(destination_path):
+        raise ProtectedFile(file_path=destination_path)
     try:
         # Create the destination directory if it doesn't exist
         os.makedirs(os.path.dirname(destination_path), exist_ok=True)
