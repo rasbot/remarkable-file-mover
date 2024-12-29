@@ -1,3 +1,5 @@
+"""Process and move / rename image file."""
+
 import argparse
 import os
 from pathlib import Path
