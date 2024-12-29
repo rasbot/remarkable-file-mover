@@ -245,6 +245,14 @@ def main():
     position = args.position
     border = args.border
 
+    process_image(
+        image_path=input_file_path,
+        target_width=width,
+        target_height=height,
+        crop_position=position,
+        border_width=border,
+    )
+
 
 if __name__ == "__main__":
     main()
