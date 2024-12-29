@@ -2,9 +2,20 @@
 
 import argparse
 import os
-from typing import Dict, Literal
+from typing import Dict, TypedDict, Literal
 
-from PIL import Image
+from PIL import Image as PILImage
+
+
+class DimensionsDict(TypedDict):
+    """DimensionsDict class.
+
+    Args:
+        TypedDict (Dict): Width and height of final dimensions.
+    """
+
+    width: int
+    height: int
 
 
 def get_processed_output_path(input_path: str, appended_txt: str = "_processed") -> str:
@@ -26,13 +37,13 @@ def get_processed_output_path(input_path: str, appended_txt: str = "_processed")
 
 
 def add_border(
-    image: Image, border_width: int, target_dim_dict: Dict[str, int]
-) -> Image:
+    image: PILImage, border_width: int, target_dim_dict: Dict[str, int]
+) -> PILImage:
     """Add a white border to a resized / processed image. The `border_width` will
     be the same for the height and with border lines.
 
     Args:
-        image (Image): PIL Image that has been resized / processed.
+        image (PILImage): PIL Image that has been resized / processed.
         border_width (int): Width of border in pixels.
         targetdim_dict (Dict[str, int]): Target width and height dict.
 
@@ -44,7 +55,7 @@ def add_border(
         return image
 
     # Create new image with target dimensions
-    bordered = Image.new(
+    bordered = PILImage.new(
         "RGB", (target_dim_dict["width"], target_dim_dict["height"]), "white"
     )
 
@@ -62,7 +73,7 @@ def get_resized_dimensions(
     target_width: int,
     target_height: int,
     border_width: int = None,
-) -> Dict[str, int]:
+) -> DimensionsDict:
     """Get image dimenions for image depending on if a border is
     being added.
 
@@ -73,7 +84,7 @@ def get_resized_dimensions(
             Defaults to None.
 
     Returns:
-        Dict[str, int]: Dict of "width" and "height" values.
+        DimensionsDict: Dict of "width" and "height" values.
     """
     # If border is specified, adjust target dimensions for initial resize
     if border_width is not None:
@@ -89,7 +100,7 @@ def crop_image(
     image_path: str,
     target_dimensions_dict: Dict[str, int],
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
-) -> Image:
+) -> PILImage:
     """Crop an image to the ratio of the target dimensions.
     Uses the border width to get the right dimensions. Can pass `crop_position`
     to determine what part of the image kept in the final crop.
@@ -108,9 +119,9 @@ def crop_image(
             Defaults to "center".
 
     Returns:
-        Image: Cropped image.
+        PILImage: Cropped image.
     """
-    img = Image.open(image_path)
+    img = PILImage.open(image_path)
 
     # Convert to RGB if necessary (handles PNG with transparency)
     if img.mode != "RGB":
@@ -159,19 +170,31 @@ def crop_image(
     return cropped
 
 
-def resize_image(cropped_img: Image, target_dim_dict: Dict[str, int]) -> Image:
+def resize_image(cropped_img: PILImage, target_dim_dict: Dict[str, int]) -> PILImage:
     """Resize the image to the intended final dimensions.
 
     Args:
-        cropped_img (Image): Cropped Image.
+        cropped_img (PILImage): Cropped Image.
         target_dim_dict (Dict[str, int]): Dict with target width and height.
 
     Returns:
-        Image: Resized image.
+        PILImage: Resized image.
     """
     return cropped_img.resize(
-        (target_dim_dict["width"], target_dim_dict["height"]), Image.Resampling.LANCZOS
+        (target_dim_dict["width"], target_dim_dict["height"]),
+        PILImage.Resampling.LANCZOS,
     )
+
+
+def save_image(processed_img: PILImage, output_path: str) -> None:
+    """Save the processed image.
+
+    Args:
+        processed_img (PILImage): Processed image.
+        output_path (str): File path to save file to.
+    """
+    processed_img.save(output_path)
+    print(f"Successfully processed image: {output_path}")
 
 
 def process_image(
@@ -180,7 +203,7 @@ def process_image(
     target_height: int,
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
-) -> Image:
+) -> PILImage:
     """Process image by cropping it, resizing it, and adding an optional white border.
 
     Args:
@@ -193,7 +216,7 @@ def process_image(
             Defaults to None.
 
     Returns:
-        Image: Fully processed image.
+        PILImage: Fully processed image.
     """
     target_dim_dict = get_resized_dimensions(
         target_width=target_width,
@@ -206,18 +229,20 @@ def process_image(
         crop_position=crop_position,
     )
 
-    prcessed_img = resize_image(
+    processed_img = resize_image(
         cropped_img=cropped_img, target_dim_dict=target_dim_dict
     )
 
     if border_width is not None:
-        prcessed_img = add_border(
-            image=prcessed_img,
+        processed_img = add_border(
+            image=processed_img,
             border_width=border_width,
             target_dim_dict=target_dim_dict,
         )
 
-    return prcessed_img
+    output_path = get_processed_output_path(input_path=image_path)
+
+    save_image(processed_img=processed_img, output_path=output_path)
 
 
 def main():
@@ -256,6 +281,11 @@ def main():
     height = args.height
     position = args.position
     border = args.border
+
+    if width <= 0 or height <= 0:
+        raise ValueError(
+            f"Target dimensions must be positive integers. Got {width} width and {height} height."
+        )
 
     process_image(
         image_path=input_file_path,
