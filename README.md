@@ -2,6 +2,8 @@
 
 A few scripts to process an image for a remarkable tablet sleep screen, and push it to the device via ssh. Currently this only updates the sleep screen.
 
+The functionality is set up to work with the resolution of the reMarkable Paper Pro. I can add the resolutions for the reMarkable 2 if requested.
+
 ## Installation
 
 To install the environment needed to run these scripts, follow the directions below. In a terminal, run the commands shown. You will need to have python installed and git.
@@ -186,4 +188,24 @@ example:
 
 > SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
 
+Connect the remarkable via a USB cable and make sure it is not sleeping. Now, in the terminal, run:
 
+```bash
+$ .\src\push_to_device.bat
+```
+and if everything is set up correctly, you should see the file being pushed in the terminal, and see "-----PROGRAM FINISHED-----" when it is done.
+
+## Issues
+
+If pushing the file to the remarkable does not work in the root directory of the repo, you can try navigating to the `src` directory and running it:
+
+```bash
+$ cd src
+$ push_to_device.bat
+```
+
+If you cannot connect to the remarkable, make sure you have the right IP address. On my device I can see `192.168...` which is not the correct IP address. The `10.11...` or something similar is the correct IP address.
+
+## Next steps
+
+Currently this is set up for the reMarkable Paper Pro. I will add resolutions for the reMarkable 2 soon, or if requested.
