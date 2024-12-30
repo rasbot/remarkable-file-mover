@@ -38,7 +38,7 @@ DESTINATION_FILE=suspended.png
 ```
 The IP and PASSWORD for your remarkable can be found by following the directions here [https://remarkable.guide/guide/access/ssh.html](https://remarkable.guide/guide/access/ssh.html)
 
-The `SOURCE_PATH` will be the full path to the final image you want to upload using the bat script. For instance, "C:\Users\Azathoth\Pictures\suspended.png"
+The `SOURCE_PATH` will be the full path to the final image you want to upload using the bat script. For instance, "C:\Users\ongo\Pictures\suspended.png"
 
 __Note:__ For Windows paths, you need to use "\". For Linux paths, you need to use "/". The `SOURCE_PATH` and `PUTTY_PATH` here are Windows paths, whereas the `DESTINATION_DIR` path is on the remarkable device, which is Linux.
 
@@ -112,16 +112,45 @@ The args are:
   <b>Cropped Image with Border</b>
 </p>
 
+#### Example usage
 
+```bash
+$ python .\src\crop_resize.py -s "C:\Users\ongo\Pictures\my_image.png" -p right -b 45
+```
+will crop the image with respect to the right of the image and add a 45 pixel border around the image.
 
-### Copy / rename the file
+### Copy / rename the file / move to specific location
 
 Running `src/move_file.py` will do the following:
 - moves / renames the file to a target destination
 
+__Note__: In the config file, you defined a target destination like this:
+> SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
+An image file you are moving will be copied to this location and renamed to `suspended.png`.
+
+In the terminal, run
+```bash
+$ python .\src\move_file.py --help
+```
+to see the list of command line args you can use.
+
+The args are:
+- `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c".
+- `--overwrite`, `-o`: Pass this flag if there is a processed image that you want to overwrite. Without this flag the script will raise an exception and not overwrite the image.
+
+#### Example usage
+```bash
+$ python .\src\move_file.py -s "C:\Users\ongo\Pictures\my_image_processed.png" -o
+```
+will move the file at that location to the target destination (defined in the config file) and will overwrite an image if one exists at the destination. Remove `-o` if you do not want to overwrite a file.
+
 ### Process image and move
 
 To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
+
+__Note__: In the config file, you defined a target destination like this:
+> SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
+An image file you are moving will be copied to this location and renamed to `suspended.png`.
 
 In the terminal, run
 ```bash
@@ -142,5 +171,19 @@ The args are:
 - `--border`, '`-b`: Add a border with the specified width in pixels (example: 40)
 - `--overwrite`, `-o`: Pass this flag if there is a processed image that you want to overwrite. Without this flag the script will raise an exception and not overwrite the image.
 
+#### Example usage
+
+```bash
+$ python .\src\process_and_move.py -s "C:\Users\ongo\Pictures\my_image.png" -p left -o
+```
+will process the source image and crop it with respect to the left of the image, and overwrite an image in the target destination if one exists.
 
 ### Pushing the image to the remarkable
+
+Make sure you have an image in the path defined in the config file
+
+example:
+
+> SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
+
+
