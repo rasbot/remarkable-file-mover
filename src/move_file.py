@@ -80,12 +80,23 @@ def main():
     parser.add_argument(
         "--source", "-s", type=str, required=True, help="Source file path"
     )
+    parser.add_argument(
+        "--overwrite",
+        "-o",
+        action="store_true",
+        help="If passed, overwrite image if it exists.",
+    )
 
     args = parser.parse_args()
 
     source_path = args.source
+    is_overwritable = args.overwrite
     destination_path = get_destination_path(config_path=CONFIG_PATH)
-    move_file(source_path=source_path, destination_path=destination_path)
+    move_file(
+        source_path=source_path,
+        destination_path=destination_path,
+        is_overwritable=is_overwritable,
+    )
 
 
 if __name__ == "__main__":
