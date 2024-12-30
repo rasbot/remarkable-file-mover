@@ -170,4 +170,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-remarkable_config.txt
+config/remarkable_config.txt
+notes.txt
