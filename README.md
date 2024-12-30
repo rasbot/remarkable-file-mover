@@ -48,30 +48,38 @@ The `DESTINATION_PATH` and `DESTINATION_FILE` do not need to be updated, as this
 
 ## Usage
 
+There are 3 parts to the scripts. These are:
+- Process an image so it is ready to be loaded onto the remarkable (crop / resize / add optional border)
+- Copy / rename the image file to a source destination that will be used to push it to the remarkable device
+- A batch script that pushes the image file to the remarkable device via SSH
+
+To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
+
 ### Image processing
 
-The image processing scripts will take an image and:
+Running `src/crop_resize.py` will do the following:
+
 - crop it to the aspect ratio of the remarkable tablet
 - resize the image to the resolution of the remarkable tablet
 - can add a white border around the image if you want
-- moves / renames the file to a target destination
-
-#### Process and move image
-
-To do the image processing and move the image file, run the `src/process_and_move.py` script.
 
 In the terminal, run
 ```bash
-$ python .\src\process_and_move.py --help
+$ python .\src\crop_resize.py --help
 ```
 to see the list of command line args you can use.
 
 The args are:
-- `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c".
-- `--width`, `-w`: Target width of the image (width of the remarkable screen in pixels, defaults to 1620)
-- `--height`, `-h`: Target height of the image (height of the remarkable screen in pixels, defaults to 2160)
-- `--position`, `-p`: Position to anchor to when cropping the image. Options are:
-  - center: Crops height / width from the center of the image.
+- `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c". (ex: `-s "C:\Users\ongo\Pictures\my_image.png"`)
+- `--width`, `-w`: Target width of the image (width of the remarkable screen in pixels, defaults to 1620). (ex: `-w 1200`)
+- `--height`, `-h`: Target height of the image (height of the remarkable screen in pixels, defaults to 2160). (ex: `-h 1920`)
+- `--position`, `-p`: Position to anchor to when cropping the image. (ex: `-p left`) Options are:
+  - "center": Crops height / width from the center of the image.
+  - "left": Crops height / width from the left of the image.
+  - "right": Crops height / width from the right of the image.
+  - "top": Crops height / width from the top of the image.
+  - "bottom": Crops height / width from the bottom of the image.
+- `--border`, '`-b`: Add a border to the image. This is a flag and if passed will add a default border of 30 pixels (ex: `-b`) or can pass a border thickness (ex: `-b 50`).
 
 #### Image Comparison
 
@@ -103,3 +111,36 @@ The args are:
   <br>
   <b>Cropped Image with Border</b>
 </p>
+
+
+
+### Copy / rename the file
+
+Running `src/move_file.py` will do the following:
+- moves / renames the file to a target destination
+
+### Process image and move
+
+To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
+
+In the terminal, run
+```bash
+$ python .\src\process_and_move.py --help
+```
+to see the list of command line args you can use.
+
+The args are:
+- `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c".
+- `--width`, `-w`: Target width of the image (width of the remarkable screen in pixels, defaults to 1620)
+- `--height`, `-h`: Target height of the image (height of the remarkable screen in pixels, defaults to 2160)
+- `--position`, `-p`: Position to anchor to when cropping the image. Options are:
+  - "center": Crops height / width from the center of the image.
+  - "left": Crops height / width from the left of the image.
+  - "right": Crops height / width from the right of the image.
+  - "top": Crops height / width from the top of the image.
+  - "bottom": Crops height / width from the bottom of the image.
+- `--border`, '`-b`: Add a border with the specified width in pixels (example: 40)
+- `--overwrite`, `-o`: Pass this flag if there is a processed image that you want to overwrite. Without this flag the script will raise an exception and not overwrite the image.
+
+
+### Pushing the image to the remarkable
