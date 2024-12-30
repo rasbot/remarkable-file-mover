@@ -1,6 +1,6 @@
 # remarkable-file-mover
 
-A few scripts to process an image for a remarkable tablet sleep screen, and push it to the device via ssh. Currently this only updates the sleep screen.
+A few scripts to process an image for a reMarkable tablet sleep screen, and push it to the device via ssh. Currently this only updates the sleep screen.
 
 The functionality is set up to work with the resolution of the reMarkable Paper Pro. I can add the resolutions for the reMarkable 2 if requested.
 
@@ -23,11 +23,11 @@ pip install -e .
 
 ### Install PuTTY
 
-This specific implementation uses PuTTY to SSH into the remarkable device. Go to: [https://www.putty.org/](https://www.putty.org/) and download the install file and run it.
+This specific implementation uses PuTTY to SSH into the reMarkable device. Go to: [https://www.putty.org/](https://www.putty.org/) and download the install file and run it.
 
 ### Create a config txt file
 
-In the root directory of the repo, add a new text file and rename it to `remarkable_config.txt`. This file will be hidden (greyed out) since it was added to `.gitignore`, and since this will contain your login info for the remarkable, keep in mind of this and do not share your PASSWORD.
+In the root directory of the repo, add a new text file and rename it to `remarkable_config.txt`. This file will be hidden (greyed out) since it was added to `.gitignore`, and since this will contain your login info for the reMarkable, keep in mind of this and do not share your PASSWORD.
 
 In the text file, you will need to define some parameters:
 ```
@@ -38,11 +38,11 @@ DESTINATION_DIR=/usr/share/remarkable
 PUTTY_PATH=C:\Program Files\PuTTY
 DESTINATION_FILE=suspended.png
 ```
-The IP and PASSWORD for your remarkable can be found by following the directions here [https://remarkable.guide/guide/access/ssh.html](https://remarkable.guide/guide/access/ssh.html)
+The IP and PASSWORD for your reMarkable can be found by following the directions here [https://remarkable.guide/guide/access/ssh.html](https://remarkable.guide/guide/access/ssh.html)
 
 The `SOURCE_PATH` will be the full path to the final image you want to upload using the bat script. For instance, "C:\Users\ongo\Pictures\suspended.png"
 
-__Note:__ For Windows paths, you need to use "\". For Linux paths, you need to use "/". The `SOURCE_PATH` and `PUTTY_PATH` here are Windows paths, whereas the `DESTINATION_DIR` path is on the remarkable device, which is Linux.
+__Note:__ For Windows paths, you need to use "\". For Linux paths, you need to use "/". The `SOURCE_PATH` and `PUTTY_PATH` here are Windows paths, whereas the `DESTINATION_DIR` path is on the reMarkable device, which is Linux.
 
 The `DESTINATION_PATH` and `DESTINATION_FILE` do not need to be updated, as this will only change the sleep screen.
 
@@ -50,10 +50,12 @@ The `DESTINATION_PATH` and `DESTINATION_FILE` do not need to be updated, as this
 
 ## Usage
 
+> If you don't want to read all of this, you can run 2 scripts to prepare an image and move it to the reMarkable. `src/process_and_move.py` and `push_to_device.bat`. The information here covers multiple scripts so just read on those 2 mentioned scripts if needed.
+
 There are 3 parts to the scripts. These are:
-- Process an image so it is ready to be loaded onto the remarkable (crop / resize / add optional border)
-- Copy / rename the image file to a source destination that will be used to push it to the remarkable device
-- A batch script that pushes the image file to the remarkable device via SSH
+- Process an image so it is ready to be loaded onto the reMarkable (crop / resize / add optional border)
+- Copy / rename the image file to a source destination that will be used to push it to the reMarkable device
+- A batch script that pushes the image file to the reMarkable device via SSH
 
 To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
 
@@ -61,8 +63,8 @@ To do the image processing and move the image file, run the `src/process_and_mov
 
 Running `src/crop_resize.py` will do the following:
 
-- crop it to the aspect ratio of the remarkable tablet
-- resize the image to the resolution of the remarkable tablet
+- crop it to the aspect ratio of the reMarkable tablet
+- resize the image to the resolution of the reMarkable tablet
 - can add a white border around the image if you want
 
 In the terminal, run
@@ -73,8 +75,8 @@ to see the list of command line args you can use.
 
 The args are:
 - `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c". (ex: `-s "C:\Users\ongo\Pictures\my_image.png"`)
-- `--width`, `-w`: Target width of the image (width of the remarkable screen in pixels, defaults to 1620). (ex: `-w 1200`)
-- `--height`, `-h`: Target height of the image (height of the remarkable screen in pixels, defaults to 2160). (ex: `-h 1920`)
+- `--width`, `-w`: Target width of the image (width of the reMarkable screen in pixels, defaults to 1620). (ex: `-w 1200`)
+- `--height`, `-h`: Target height of the image (height of the reMarkable screen in pixels, defaults to 2160). (ex: `-h 1920`)
 - `--position`, `-p`: Position to anchor to when cropping the image. (ex: `-p left`) Options are:
   - "center": Crops height / width from the center of the image.
   - "left": Crops height / width from the left of the image.
@@ -162,8 +164,8 @@ to see the list of command line args you can use.
 
 The args are:
 - `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c".
-- `--width`, `-w`: Target width of the image (width of the remarkable screen in pixels, defaults to 1620)
-- `--height`, `-h`: Target height of the image (height of the remarkable screen in pixels, defaults to 2160)
+- `--width`, `-w`: Target width of the image (width of the reMarkable screen in pixels, defaults to 1620)
+- `--height`, `-h`: Target height of the image (height of the reMarkable screen in pixels, defaults to 2160)
 - `--position`, `-p`: Position to anchor to when cropping the image. Options are:
   - "center": Crops height / width from the center of the image.
   - "left": Crops height / width from the left of the image.
@@ -180,7 +182,7 @@ $ python .\src\process_and_move.py -s "C:\Users\ongo\Pictures\my_image.png" -p l
 ```
 will process the source image and crop it with respect to the left of the image, and overwrite an image in the target destination if one exists.
 
-### Pushing the image to the remarkable
+### Pushing the image to the reMarkable
 
 Make sure you have an image in the path defined in the config file
 
@@ -188,7 +190,7 @@ example:
 
 > SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
 
-Connect the remarkable via a USB cable and make sure it is not sleeping. Now, in the terminal, run:
+Connect the reMarkable via a USB cable and make sure it is not sleeping. Now, in the terminal, run:
 
 ```bash
 $ .\src\push_to_device.bat
@@ -197,14 +199,14 @@ and if everything is set up correctly, you should see the file being pushed in t
 
 ## Issues
 
-If pushing the file to the remarkable does not work in the root directory of the repo, you can try navigating to the `src` directory and running it:
+If pushing the file to the reMarkable does not work in the root directory of the repo, you can try navigating to the `src` directory and running it:
 
 ```bash
 $ cd src
 $ push_to_device.bat
 ```
 
-If you cannot connect to the remarkable, make sure you have the right IP address. On my device I can see `192.168...` which is not the correct IP address. The `10.11...` or something similar is the correct IP address.
+If you cannot connect to the reMarkable, make sure you have the right IP address. On my device I can see `192.168...` which is not the correct IP address. The `10.11...` or something similar is the correct IP address.
 
 ## Next steps
 
