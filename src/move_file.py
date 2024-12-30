@@ -31,6 +31,10 @@ def get_destination_path(config_path: Path) -> Path:
     Returns:
         Path: Path to move image to.
     """
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(
+            f"{config_path} file was not found! Please create it (see README)."
+        )
     with open(config_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
     destination_path = None
