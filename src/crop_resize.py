@@ -3,7 +3,7 @@
 import argparse
 from enum import Enum
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Dict, Literal, TypedDict, Tuple
 
 from PIL import Image as PILImage
 
@@ -17,6 +17,17 @@ class DimensionsDict(TypedDict):
 
     width: int
     height: int
+
+
+class CoordinateDict(TypedDict):
+    """CoordinateDict class.
+
+    Args:
+        TypedDict (Dict): x and y positions.
+    """
+
+    x: int
+    y: int
 
 
 class TextPosition(Enum):
@@ -118,8 +129,41 @@ def get_text_position(
     text_image_dims: DimensionsDict,
     position: TextPosition,
     side_buffer: int = 0,
-) -> DimensionsDict:
-    pass
+) -> Dict[TextPosition, Tuple[int, int]]:
+    """Get x and y coords for text overlay relative to desired
+    position on background image.
+
+    Args:
+        background_image_dims (DimensionsDict): Background image dimensions
+            dict.
+        text_image_dims (DimensionsDict): Text image dimensions dict.
+        position (TextPosition): TextPosition enum.
+        side_buffer (int, optional): Buffer from the side in pixels. For left positions, moves image right.
+            For right positions, moves image left. Defaults to 0.
+
+    Returns:
+        Dict[TextPosition, Tuple[int, int]: TextPosition and
+            x, y coords for pasting text overlay.
+    """
+    # For left positions, x = buffer
+    # For right positions, x = background_width - text_width - buffer
+    x_left = side_buffer
+    x_right = background_image_dims["width"] - text_image_dims["width"] - side_buffer
+
+    y_upper = 0
+    y_middle = (background_image_dims["height"] - text_image_dims["height"]) // 2
+    y_lower = background_image_dims["height"] - text_image_dims["height"]
+
+    position_coords = {
+        TextPosition.UPPER_LEFT: (x_left, y_upper),
+        TextPosition.UPPER_RIGHT: (x_right, y_upper),
+        TextPosition.MIDDLE_LEFT: (x_left, y_middle),
+        TextPosition.MIDDLE_RIGHT: (x_right, y_middle),
+        TextPosition.LOWER_LEFT: (x_left, y_lower),
+        TextPosition.LOWER_RIGHT: (x_right, y_lower),
+    }
+
+    return position_coords[position]
 
 
 def crop_image(
