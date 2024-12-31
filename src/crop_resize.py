@@ -88,16 +88,14 @@ def add_border(
 
 
 def get_dimensions(
-    target_width: int,
-    target_height: int,
+    final_image_dims: DimensionsDict,
     border_width: int = None,
 ) -> DimensionsDict:
     """Get image dimenions for image depending on if a border is
     being added.
 
     Args:
-        target_width (int): Target width.
-        target_height (int): Target height.
+        final_image_dims (DimensionsDict): Image dimension dict.
         border_width (int, optional): Border width.
             Defaults to None.
 
@@ -106,12 +104,21 @@ def get_dimensions(
     """
     # If border is specified, adjust target dimensions for initial resize
     if border_width is not None:
-        resize_width = target_width - (2 * border_width)
-        resize_height = target_height - (2 * border_width)
+        resize_width = final_image_dims["width"] - (2 * border_width)
+        resize_height = final_image_dims["height"] - (2 * border_width)
     else:
-        resize_width = target_width
-        resize_height = target_height
+        resize_width = final_image_dims["width"]
+        resize_height = final_image_dims["height"]
     return DimensionsDict(width=resize_width, height=resize_height)
+
+
+def get_text_position(
+    background_image_dims: DimensionsDict,
+    text_image_dims: DimensionsDict,
+    position: TextPosition,
+    side_buffer: int = 0,
+) -> DimensionsDict:
+    pass
 
 
 def crop_image(
