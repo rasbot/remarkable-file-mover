@@ -7,6 +7,9 @@ from typing import Literal, TypedDict
 
 from PIL import Image as PILImage
 
+from src.constants import CONFIG_PATH, TEXT_IMG_BUFFER
+import src.utils as u
+
 
 class DimensionsDict(TypedDict):
     """DimensionsDict class.
@@ -376,6 +379,17 @@ def process_image(
             border_width=border_width,
             final_image_dims=final_image_dims,
         )
+
+    text_img_path = u.get_config_path(
+        config_path=CONFIG_PATH, config_key=u.ConfigKey.TEXT_IMAGE_PATH
+    )
+
+    processed_img = overlay_text_image(
+        processed_img=processed_img,
+        text_image_path=text_img_path,
+        position=TextPosition.LOWER_RIGHT,
+        side_buffer=TEXT_IMG_BUFFER,
+    )
 
     if not save_path:
         save_path = get_processed_output_path(input_path=image_path)
