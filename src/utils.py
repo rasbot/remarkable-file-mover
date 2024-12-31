@@ -37,10 +37,15 @@ def get_config_path(config_path: Path, config_key: ConfigKey) -> Any:
         config_path (Path): Path to config file.
         config_key (ConfigKey): Config key enum.
 
+    Raises:
+        FileNotFoundError: Raised if the config file does not
+            exist.
+        KeyError: Raised if the config key is not found in the
+            file.
+
     Returns:
         Path: Path of config key / value.
     """
-    # TODO: Update docstring with exceptions
     if not os.path.exists(config_path):
         raise FileNotFoundError(
             f"{config_path} file was not found! Please create it (see README)."
@@ -50,10 +55,10 @@ def get_config_path(config_path: Path, config_key: ConfigKey) -> Any:
     config_path = None
     no_key = True
     for line in lines:
-        if line.startswith(f"{config_key}="):
+        if line.startswith(f"{config_key.value}="):
             no_key = False
             config_path = line.split("=", 1)[1].strip()
     if no_key:
-        raise KeyError(f"Config key ({config_key}) not found.")
+        raise KeyError(f"Config key ({config_key.value}) not found.")
 
     return Path(config_path)
