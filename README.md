@@ -57,11 +57,11 @@ There are 3 parts to the scripts. These are:
 - Copy / rename the image file to a source destination that will be used to push it to the reMarkable device
 - A batch script that pushes the image file to the reMarkable device via SSH
 
-To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
+To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/process_image.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
 
 ### Image processing
 
-Running `src/crop_resize.py` will do the following:
+Running `src/process_image.py` will do the following:
 
 - crop it to the aspect ratio of the reMarkable tablet
 - resize the image to the resolution of the reMarkable tablet
@@ -69,7 +69,7 @@ Running `src/crop_resize.py` will do the following:
 
 In the terminal, run
 ```bash
-$ python .\src\crop_resize.py --help
+$ python .\src\process_image.py --help
 ```
 to see the list of command line args you can use.
 
@@ -119,7 +119,7 @@ The args are:
 #### Example usage
 
 ```bash
-$ python .\src\crop_resize.py -s "C:\Users\ongo\Pictures\my_image.png" -p right -b 45
+$ python .\src\process_image.py -s "C:\Users\ongo\Pictures\my_image.png" -p right -b 45
 ```
 will crop the image with respect to the right of the image and add a 45 pixel border around the image.
 
@@ -150,7 +150,7 @@ will move the file at that location to the target destination (defined in the co
 
 ### Process image and move
 
-To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/crop_resize.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
+To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/process_image.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
 
 __Note__: In the config file, you defined a target destination like this:
 > SOURCE_PATH=C:\Users\Azathoth\Pictures\suspended.png
