@@ -56,7 +56,7 @@ def get_processed_output_path(
 
 
 def add_border(
-    image: PILImage, border_width: int, target_width: int, target_height: int
+    image: PILImage, border_width: int, final_image_dims: DimensionsDict
 ) -> PILImage:
     """Add a white border to a resized / processed image. The `border_width` will
     be the same for the height and with border lines.
@@ -64,8 +64,7 @@ def add_border(
     Args:
         image (PILImage): PIL Image that has been resized / processed.
         border_width (int): Width of border in pixels.
-        target_width (int): Target width.
-        target_height (int): Target height.
+        final_image_dims (DimensionsDict): Final image dimensions dict.
 
     Returns:
         Image: Resized / processed image with a white border.
@@ -75,7 +74,9 @@ def add_border(
         return image
 
     # Create new image with target dimensions
-    bordered = PILImage.new("RGB", (target_width, target_height), "white")
+    bordered = PILImage.new(
+        "RGB", (final_image_dims["width"], final_image_dims["height"]), "white"
+    )
 
     # Calculate position to paste the image (these are the same values)
     x_value = border_width
@@ -226,8 +227,7 @@ def save_image(processed_img: PILImage, output_path: Path) -> None:
 
 def process_image(
     image_path: Path,
-    target_width: int,
-    target_height: int,
+    final_image_dims: DimensionsDict,
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
     save_path: Path = None,
@@ -236,8 +236,7 @@ def process_image(
 
     Args:
         image_path (Path): Full path to image file.
-        target_width (int): Target width of final image.
-        target_height (int): Target height of final image.
+        final_image_dims (DimensionsDict): Final image dimensions dict.
         crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
             where to crop the image relative to. Defaults to "center".
         border_width (int, optional): Width of border.
@@ -249,8 +248,7 @@ def process_image(
         PILImage: Fully processed image.
     """
     resized_dim_dict = get_dimensions(
-        target_width=target_width,
-        target_height=target_height,
+        final_image_dims=final_image_dims,
         border_width=border_width,
     )
     cropped_img = crop_image(
@@ -268,8 +266,7 @@ def process_image(
         processed_img = add_border(
             image=processed_img,
             border_width=border_width,
-            target_width=target_width,
-            target_height=target_height,
+            final_image_dims=final_image_dims,
         )
 
     if not save_path:
@@ -320,10 +317,11 @@ def main():
             f"Target dimensions must be positive integers. Got {width} width and {height} height."
         )
 
+    final_image_dims_dict = DimensionsDict(width=width, height=height)
+
     process_image(
         image_path=input_file_path,
-        target_width=width,
-        target_height=height,
+        final_image_dims=final_image_dims_dict,
         crop_position=position,
         border_width=border,
     )
