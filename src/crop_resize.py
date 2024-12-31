@@ -1,6 +1,7 @@
 """Process an image to set dimension by cropping, resizing, and adding an optional border."""
 
 import argparse
+from enum import Enum
 from pathlib import Path
 from typing import Literal, TypedDict
 
@@ -16,6 +17,21 @@ class DimensionsDict(TypedDict):
 
     width: int
     height: int
+
+
+class TextPosition(Enum):
+    """Text Position enum.
+
+    Args:
+        Enum (str): Text position.
+    """
+
+    UPPER_LEFT = "upper_left"
+    UPPER_RIGHT = "upper_right"
+    MIDDLE_LEFT = "middle_left"
+    MIDDLE_RIGHT = "middle_right"
+    LOWER_LEFT = "lower_left"
+    LOWER_RIGHT = "lower_right"
 
 
 def get_processed_output_path(
