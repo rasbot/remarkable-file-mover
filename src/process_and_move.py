@@ -6,18 +6,18 @@ from pathlib import Path
 from typing import Literal
 
 from src.constants import CONFIG_PATH
-from src.crop_resize import get_processed_output_path, process_image
+from src.process_image import get_processed_output_path, process_image, DimensionsDict
 from src.move_file import ProtectedFile, get_destination_path, move_file
 
 
 def process_and_move(
     source_path: Path,
-    width: int,
-    height: int,
+    dimensions_dict: DimensionsDict,
     position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border: int = None,
     is_overwritable: bool = False,
 ) -> None:
+    # TODO: Update docstring
     """Process an image and move / rename it.
 
     Args:
@@ -40,10 +40,10 @@ def process_and_move(
     # make sure we can overwrite the file if it exists before processing
     if not is_overwritable and os.path.exists(processed_path):
         raise ProtectedFile(file_path=processed_path)
+
     process_image(
         image_path=source_path,
-        target_width=width,
-        target_height=height,
+        final_image_dims=dimensions_dict,
         crop_position=position,
         border_width=border,
         save_path=processed_path,
@@ -100,10 +100,11 @@ def main():
     border = args.border
     overwrite = args.overwrite
 
+    final_image_dims_dict = DimensionsDict(width=width, height=height)
+
     process_and_move(
         source_path=input_file_path,
-        width=width,
-        height=height,
+        dimensions_dict=final_image_dims_dict,
         position=position,
         border=border,
         is_overwritable=overwrite,
