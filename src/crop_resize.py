@@ -3,7 +3,7 @@
 import argparse
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Literal, TypedDict, Tuple
+from typing import Literal, TypedDict
 
 from PIL import Image as PILImage
 
@@ -175,6 +175,59 @@ def get_text_position(
     }
 
     return position_coords[position]
+
+
+def overlay_text_image(
+    processed_img: PILImage,
+    text_image_path: Path,
+    position: TextPosition,
+    side_buffer: int = 0,
+) -> PILImage:
+    """Overlay text image onto a background image in the specified
+    position.
+
+    Args:
+        processed_img: Processed image object to add text to.
+        text_image_path: Path to text overlay image (PNG with transparency)
+        position: Position to place text from TextPosition enum
+        side_buffer: Buffer from the side in pixels. For left positions, moves image right.
+            For right positions, moves image left. Defaults to 0.
+
+    Returns:
+        PIL Image with text overlaid.
+    """
+    # load the text image
+    text_img = load_image(text_image_path).convert("RGBA")
+
+    # Verify dimensions
+    if processed_img.size != (1620, 2160):
+        raise ValueError("Background image must be 1620x2160")
+    if text_img.size != (810, 720):
+        raise ValueError("Text overlay must be 810x720")
+
+    background_dims_dict = DimensionsDict(
+        width=processed_img.size[0], height=processed_img.size[1]
+    )
+    text_dims_dict = DimensionsDict(width=text_img.size[0], height=text_img.size[1])
+
+    # Get position coordinates
+    coord_dict = get_text_position(
+        background_image_dims=background_dims_dict,
+        text_image_dims=text_dims_dict,
+        position=position,
+        side_buffer=side_buffer,
+    )
+
+    # Get alpha channel for mask
+    alpha_mask = text_img.split()[3]
+
+    # Create a copy of background to modify
+    result = processed_img.copy()
+
+    # Paste text overlay
+    result.paste(text_img, (coord_dict["x"], coord_dict["y"]), mask=alpha_mask)
+
+    return result
 
 
 def crop_image(
