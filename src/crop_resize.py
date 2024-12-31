@@ -45,6 +45,18 @@ class TextPosition(Enum):
     LOWER_RIGHT = "lower_right"
 
 
+def load_image(image_path: Path) -> PILImage:
+    """Load a PILImage from a path.
+
+    Args:
+        image_path (Path): Path of image file.
+
+    Returns:
+        PILImage: Image array.
+    """
+    return PILImage.open(image_path)
+
+
 def get_processed_output_path(
     input_path: Path, appended_txt: str = "_processed"
 ) -> Path:
@@ -129,7 +141,7 @@ def get_text_position(
     text_image_dims: DimensionsDict,
     position: TextPosition,
     side_buffer: int = 0,
-) -> Dict[TextPosition, Tuple[int, int]]:
+) -> CoordinateDict:
     """Get x and y coords for text overlay relative to desired
     position on background image.
 
@@ -142,8 +154,7 @@ def get_text_position(
             For right positions, moves image left. Defaults to 0.
 
     Returns:
-        Dict[TextPosition, Tuple[int, int]: TextPosition and
-            x, y coords for pasting text overlay.
+       CoordinateDict: x, y coords for pasting text overlay.
     """
     # For left positions, x = buffer
     # For right positions, x = background_width - text_width - buffer
@@ -155,12 +166,12 @@ def get_text_position(
     y_lower = background_image_dims["height"] - text_image_dims["height"]
 
     position_coords = {
-        TextPosition.UPPER_LEFT: (x_left, y_upper),
-        TextPosition.UPPER_RIGHT: (x_right, y_upper),
-        TextPosition.MIDDLE_LEFT: (x_left, y_middle),
-        TextPosition.MIDDLE_RIGHT: (x_right, y_middle),
-        TextPosition.LOWER_LEFT: (x_left, y_lower),
-        TextPosition.LOWER_RIGHT: (x_right, y_lower),
+        TextPosition.UPPER_LEFT: CoordinateDict(x=x_left, y=y_upper),
+        TextPosition.UPPER_RIGHT: CoordinateDict(x=x_right, y=y_upper),
+        TextPosition.MIDDLE_LEFT: CoordinateDict(x=x_left, y=y_middle),
+        TextPosition.MIDDLE_RIGHT: CoordinateDict(x=x_right, y=y_middle),
+        TextPosition.LOWER_LEFT: CoordinateDict(x=x_left, y=y_lower),
+        TextPosition.LOWER_RIGHT: CoordinateDict(x=x_right, y=y_lower),
     }
 
     return position_coords[position]
@@ -191,7 +202,7 @@ def crop_image(
     Returns:
         PILImage: Cropped image.
     """
-    img = PILImage.open(image_path)
+    img = load_image(image_path=image_path)
 
     # Convert to RGB if necessary (handles PNG with transparency)
     if img.mode != "RGB":
