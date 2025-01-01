@@ -480,17 +480,9 @@ def main():
     text_overlay_filename = args.textfile
     is_inverted = args.invert
 
-    text_overlay_filepath = None
-    if text_overlay_filename:
-        text_overlay_filepath = os.path.join(
-            c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
-        )
-    if not os.path.exists(text_overlay_filepath):
-        err_msg = (
-            f"{text_overlay_filepath} does not exist. "
-            + "Please add it or choose a different file."
-        )
-        raise FileNotFoundError(err_msg)
+    text_overlay_filepath = u.get_text_overlay_path(
+        text_overlay_filename=text_overlay_filename
+    )
 
     img_config = u.load_config_yaml(c.IMAGE_CONFIG_PATH)
     width = img_config["target_img_dims"]["width"]
