@@ -80,3 +80,29 @@ def get_config_path(config_path: Path, config_key: ConfigKey) -> Any:
         raise KeyError(f"Config key ({config_key.value}) not found.")
 
     return Path(config_path)
+
+
+def get_text_overlay_path(text_overlay_filename: str):
+    """Get the path for the text overlay file.
+
+    Args:
+        text_overlay_filename (str): Text overlay filename.
+
+    Raises:
+        FileNotFoundError: Raised if the file does not exist.
+
+    Returns:
+        Path: Path of text overlay file.
+    """
+    text_overlay_filepath = None
+    if text_overlay_filename:
+        text_overlay_filepath = os.path.join(
+            c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
+        )
+    if not os.path.exists(text_overlay_filepath):
+        err_msg = (
+            f"{text_overlay_filepath} does not exist. "
+            + "Please add it or choose a different file."
+        )
+        raise FileNotFoundError(err_msg)
+    return Path(text_overlay_filepath)
