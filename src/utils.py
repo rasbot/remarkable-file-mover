@@ -1,7 +1,14 @@
 import os
+import yaml
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
+
+
+def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
+    with open(yaml_config_path, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+    return config
 
 
 class ProtectedFile(Exception):
