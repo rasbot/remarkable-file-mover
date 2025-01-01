@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import yaml
 
