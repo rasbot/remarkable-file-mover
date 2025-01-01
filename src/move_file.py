@@ -6,19 +6,7 @@ import shutil
 from pathlib import Path
 
 from src.constants import CONFIG_PATH
-
-
-class ProtectedFile(Exception):
-    """Error class to handle protected file."""
-
-    def __init__(self, file_path: Path):
-        self.file_path = file_path
-        self.message = (
-            f"File path {file_path} exists and is protected from being overwritten. "
-            "Move the existing file or pass `is_overwritable` = True in move_file."
-        )
-
-        super().__init__(self.message)
+from src.utils import ProtectedFile, ConfigKey, get_config_path
 
 
 def get_destination_path(config_path: Path) -> Path:
@@ -95,7 +83,9 @@ def main():
 
     source_path = args.source
     is_overwritable = args.overwrite
-    destination_path = get_destination_path(config_path=CONFIG_PATH)
+    destination_path = get_config_path(
+        config_path=CONFIG_PATH, config_key=ConfigKey.DESTINATION_DIR
+    )
     move_file(
         source_path=source_path,
         destination_path=destination_path,
