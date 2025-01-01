@@ -7,6 +7,8 @@ from typing import Any, Dict
 
 import yaml
 
+import src.constants as c
+
 
 def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     """Load a yaml file into a dict.
