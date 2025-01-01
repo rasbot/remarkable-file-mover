@@ -7,7 +7,8 @@ from typing import Literal
 
 from src.constants import CONFIG_PATH
 from src.process_image import get_processed_output_path, process_image, DimensionsDict
-from src.move_file import ProtectedFile, get_destination_path, move_file
+from src.utils import get_config_path, ProtectedFile, ConfigKey
+from src.move_file import move_file
 
 
 def process_and_move(
@@ -46,7 +47,9 @@ def process_and_move(
         border_width=border,
         save_path=processed_path,
     )
-    destination_path = get_destination_path(config_path=CONFIG_PATH)
+    destination_path = get_config_path(
+        config_path=CONFIG_PATH, config_key=ConfigKey.DESTINATION_DIR
+    )
     move_file(
         source_path=processed_path,
         destination_path=destination_path,
