@@ -4,7 +4,7 @@ import argparse
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import Dict, Literal, TypedDict
 
 from PIL import Image as PILImage
 
@@ -185,30 +185,29 @@ def overlay_text_image(
     processed_img: PILImage,
     text_img: PILImage,
     position: TextPosition,
-    side_buffer: int = 0,
+    img_config: Dict[str, int],
 ) -> PILImage:
     """Overlay text image onto a background image in the specified
     position.
 
     Args:
-        processed_img: Processed image object to add text to.
-        text_img: Text overlay image (PNG with transparency)
-        position: Position to place text from TextPosition enum
-        side_buffer: Buffer from the side in pixels. For left positions, moves image right.
-            For right positions, moves image left. Defaults to 0.
+        processed_img (PILImage): Processed image object to add text to.
+        text_img (PILImage): Text overlay image (PNG with transparency)
+        position (TextPosition): Position to place text from TextPosition enum.
+        img_config (Dict[str, int]): Image config dict.
 
     Returns:
         PIL Image with text overlaid.
     """
     # Verify dimensions
-    processed_width = c.TARGET_IMG_DIMS["width"]
-    processed_height = c.TARGET_IMG_DIMS["height"]
+    processed_width = img_config["target_img_dims"]["width"]
+    processed_height = img_config["target_img_dims"]["height"]
     if processed_img.size != (processed_width, processed_height):
         raise ValueError(
             f"Background image must be {processed_width}x{processed_height}"
         )
-    text_width = c.TEXT_OVERLAY_IMG_DIMS["width"]
-    text_height = c.TEXT_OVERLAY_IMG_DIMS["height"]
+    text_width = img_config["text_overlay_img_dims"]["width"]
+    text_height = img_config["text_overlay_img_dims"]["height"]
     if text_img.size != (text_width, text_height):
         raise ValueError(f"Text overlay must be {text_width}x{text_height}")
 
@@ -222,7 +221,7 @@ def overlay_text_image(
         background_image_dims=background_dims_dict,
         text_image_dims=text_dims_dict,
         position=position,
-        side_buffer=side_buffer,
+        side_buffer=img_config["text_img_buffer"],
     )
 
     # Get alpha channel for mask
@@ -262,10 +261,6 @@ def crop_image(
     Returns:
         PILImage: Cropped image.
     """
-    # Convert to RGB if necessary (handles PNG with transparency)
-    # if img.mode != "RGB":
-    #     img = img.convert("RGB")
-
     # Calculate resized aspect ratio
     resized_target_ratio = (
         resized_dimensions_dict["width"] / resized_dimensions_dict["height"]
@@ -341,6 +336,7 @@ def save_image(processed_img: PILImage, output_path: Path) -> None:
 def process_image(
     image_path: Path,
     final_image_dims: DimensionsDict,
+    img_config: Dict[str, int],
     crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
     border_width: int = None,
     save_path: Path = None,
@@ -359,6 +355,7 @@ def process_image(
             Defaults to None.
         text_image_path (Path, optional): Path to text overlay file.
             Defaults to None.
+        img_config (Dict[str, int]): Image config values.
 
     Returns:
         PILImage: Fully processed image.
@@ -386,7 +383,8 @@ def process_image(
             final_image_dims=final_image_dims,
         )
     text_dim_dict = DimensionsDict(
-        width=c.TEXT_OVERLAY_IMG_DIMS["width"], height=c.TEXT_OVERLAY_IMG_DIMS["height"]
+        width=img_config["text_overlay_img_dims"]["width"],
+        height=img_config["text_overlay_img_dims"]["height"],
     )
     if text_image_path:
         # load the text image
@@ -398,7 +396,7 @@ def process_image(
             processed_img=processed_img,
             text_img=text_img,
             position=TextPosition.LOWER_RIGHT,
-            side_buffer=c.TEXT_IMG_BUFFER,
+            img_config=img_config,
         )
 
     if not save_path:
@@ -414,12 +412,6 @@ def main():
     )
     parser.add_argument(
         "--source", "-s", type=str, help="Path to input image", required=True
-    )
-    parser.add_argument(
-        "--width", "-w", type=int, default=1620, help="Target width (default: 1620)"
-    )
-    parser.add_argument(
-        "--height", "-ht", type=int, default=2160, help="Target height (default: 2160)"
     )
     parser.add_argument(
         "--position",
@@ -447,8 +439,6 @@ def main():
 
     args = parser.parse_args()
     input_file_path = Path(args.source)
-    width = args.width
-    height = args.height
     position = args.position
     border = args.border
     text_overlay_filename = args.textfile
@@ -458,6 +448,10 @@ def main():
         text_overlay_filepath = os.path.join(
             c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
         )
+
+    img_config = u.load_config_yaml(c.IMAGE_CONFIG_PATH)
+    width = img_config["target_img_dims"]["width"]
+    height = img_config["target_img_dims"]["height"]
 
     if width <= 0 or height <= 0:
         raise ValueError(
@@ -469,6 +463,7 @@ def main():
     process_image(
         image_path=input_file_path,
         final_image_dims=final_image_dims_dict,
+        img_config=img_config,
         crop_position=position,
         border_width=border,
         text_image_path=text_overlay_filepath,
