@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 from src.constants import CONFIG_PATH
-from src.utils import ProtectedFile, ConfigKey, get_config_path
+import src.utils as u
 
 
 def move_file(
@@ -27,7 +27,7 @@ def move_file(
             to prevent it from being overwritten.
     """
     if not is_overwritable and os.path.exists(destination_path):
-        raise ProtectedFile(file_path=destination_path)
+        raise u.ProtectedFile(file_path=destination_path)
     try:
         # Create the destination directory if it doesn't exist
         os.makedirs(os.path.dirname(destination_path), exist_ok=True)
@@ -45,22 +45,14 @@ def main():
     parser = argparse.ArgumentParser(
         description="Move and rename a file to a specific location."
     )
-    parser.add_argument(
-        "--source", "-s", type=str, required=True, help="Source file path"
-    )
-    parser.add_argument(
-        "--overwrite",
-        "-o",
-        action="store_true",
-        help="If passed, overwrite image if it exists.",
-    )
+    u.add_move_file_args(parser=parser)
 
     args = parser.parse_args()
 
     source_path = args.source
     is_overwritable = args.overwrite
-    destination_path = get_config_path(
-        config_path=CONFIG_PATH, config_key=ConfigKey.DESTINATION_DIR
+    destination_path = u.get_config_path(
+        config_path=CONFIG_PATH, config_key=u.ConfigKey.DESTINATION_DIR
     )
     move_file(
         source_path=source_path,
