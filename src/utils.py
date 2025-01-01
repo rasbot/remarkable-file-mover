@@ -1,11 +1,22 @@
+"""Utility functions for repo"""
+
 import os
-import yaml
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict
 
+import yaml
+
 
 def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
+    """Load a yaml file into a dict.
+
+    Args:
+        yaml_config_path (Path): yaml path.
+
+    Returns:
+        Dict[str, int]: Config dict.
+    """
     with open(yaml_config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     return config
