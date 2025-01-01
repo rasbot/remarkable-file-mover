@@ -263,8 +263,8 @@ def crop_image(
         PILImage: Cropped image.
     """
     # Convert to RGB if necessary (handles PNG with transparency)
-    if img.mode != "RGB":
-        img = img.convert("RGB")
+    # if img.mode != "RGB":
+    #     img = img.convert("RGB")
 
     # Calculate resized aspect ratio
     resized_target_ratio = (
@@ -388,18 +388,18 @@ def process_image(
     text_dim_dict = DimensionsDict(
         width=c.TEXT_OVERLAY_IMG_DIMS["width"], height=c.TEXT_OVERLAY_IMG_DIMS["height"]
     )
-    # load the text image
-    text_img = load_image(text_image_path).convert("RGBA")
+    if text_image_path:
+        # load the text image
+        text_img = load_image(text_image_path).convert("RGBA")
+        text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
+        text_img = resize_image(cropped_img=text_img, resized_dim_dict=text_dim_dict)
 
-    text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
-    text_img = resize_image(cropped_img=text_img, resized_dim_dict=text_dim_dict)
-
-    processed_img = overlay_text_image(
-        processed_img=processed_img,
-        text_img=text_img,
-        position=TextPosition.LOWER_RIGHT,
-        side_buffer=c.TEXT_IMG_BUFFER,
-    )
+        processed_img = overlay_text_image(
+            processed_img=processed_img,
+            text_img=text_img,
+            position=TextPosition.LOWER_RIGHT,
+            side_buffer=c.TEXT_IMG_BUFFER,
+        )
 
     if not save_path:
         save_path = get_processed_output_path(input_path=image_path)
@@ -458,7 +458,6 @@ def main():
         text_overlay_filepath = os.path.join(
             c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
         )
-    print(text_overlay_filepath)
 
     if width <= 0 or height <= 0:
         raise ValueError(
@@ -472,6 +471,7 @@ def main():
         final_image_dims=final_image_dims_dict,
         crop_position=position,
         border_width=border,
+        text_image_path=text_overlay_filepath,
     )
 
 
