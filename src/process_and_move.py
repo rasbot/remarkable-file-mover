@@ -17,13 +17,11 @@ def process_and_move(
     border: int = None,
     is_overwritable: bool = False,
 ) -> None:
-    # TODO: Update docstring
     """Process an image and move / rename it.
 
     Args:
         source_path (Path): Initial source image path.
-        width (int): Width of final image.
-        height (int): Height of final image.
+        dimensions_dict (DimensionsDict): Dict of final image dimensions.
         position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
             where to crop the image relative to. Defaults to "center".
         border (int): Border thickness if needed.
