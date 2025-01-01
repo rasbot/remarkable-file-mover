@@ -181,6 +181,30 @@ def get_text_position(
     return position_coords[position]
 
 
+def invert_text_color(image: PILImage) -> PILImage:
+    """Invert the color of text (black to white or white to black)
+    while preserving transparency.
+
+    Args:
+        image (PILImage): PIL Image in RGBA mode
+
+    Returns:
+        image with inverted colors but same transparency.
+    """
+    # Split into RGBA channels
+    r, g, b, a = image.split()
+
+    # Create inverted RGB channels (255 - original)
+    r_inv = PILImage.eval(r, lambda x: 255 - x)
+    g_inv = PILImage.eval(g, lambda x: 255 - x)
+    b_inv = PILImage.eval(b, lambda x: 255 - x)
+
+    # Merge back together with original alpha
+    inverted = PILImage.merge("RGBA", (r_inv, g_inv, b_inv, a))
+
+    return inverted
+
+
 def overlay_text_image(
     processed_img: PILImage,
     text_img: PILImage,
@@ -341,12 +365,14 @@ def process_image(
     border_width: int = None,
     save_path: Path = None,
     text_image_path: Path = None,
+    is_inverted: bool = False,
 ) -> PILImage:
     """Process image by cropping it, resizing it, and adding an optional white border.
 
     Args:
         image_path (Path): Full path to image file.
         final_image_dims (DimensionsDict): Final image dimensions dict.
+        img_config (Dict[str, int]): Image config values.
         crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
             where to crop the image relative to. Defaults to "center".
         border_width (int, optional): Width of border.
@@ -355,7 +381,9 @@ def process_image(
             Defaults to None.
         text_image_path (Path, optional): Path to text overlay file.
             Defaults to None.
-        img_config (Dict[str, int]): Image config values.
+        is_inverted (bool, optional): If True, invert the text image colors.
+            Defaults to False.
+
 
     Returns:
         PILImage: Fully processed image.
@@ -389,6 +417,8 @@ def process_image(
     if text_image_path:
         # load the text image
         text_img = load_image(text_image_path).convert("RGBA")
+        if is_inverted:
+            text_img = invert_text_color(image=text_img)
         text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
         text_img = resize_image(cropped_img=text_img, resized_dim_dict=text_dim_dict)
 
@@ -436,18 +466,31 @@ def main():
         const="text_overlay.png",
         help="File name of text overlay file, if used.",
     )
+    parser.add_argument(
+        "--invert",
+        "-i",
+        action="store_true",
+        help="Invert the text color (black to white or white to black)",
+    )
 
     args = parser.parse_args()
     input_file_path = Path(args.source)
     position = args.position
     border = args.border
     text_overlay_filename = args.textfile
+    is_inverted = args.invert
 
     text_overlay_filepath = None
     if text_overlay_filename:
         text_overlay_filepath = os.path.join(
             c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
         )
+    if not os.path.exists(text_overlay_filepath):
+        err_msg = (
+            f"{text_overlay_filepath} does not exist. "
+            + "Please add it or choose a different file."
+        )
+        raise FileNotFoundError(err_msg)
 
     img_config = u.load_config_yaml(c.IMAGE_CONFIG_PATH)
     width = img_config["target_img_dims"]["width"]
@@ -467,6 +510,7 @@ def main():
         crop_position=position,
         border_width=border,
         text_image_path=text_overlay_filepath,
+        is_inverted=is_inverted,
     )
 
 
