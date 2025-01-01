@@ -9,30 +9,6 @@ from src.constants import CONFIG_PATH
 from src.utils import ProtectedFile, ConfigKey, get_config_path
 
 
-def get_destination_path(config_path: Path) -> Path:
-    """Read in the value of the desitination path from
-    the config file (value for `SOURCE_PATH` in config).
-
-    Args:
-        config_path (Path): Path to config file.
-
-    Returns:
-        Path: Path to move image to.
-    """
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(
-            f"{config_path} file was not found! Please create it (see README)."
-        )
-    with open(config_path, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-    destination_path = None
-    for line in lines:
-        if line.startswith("SOURCE_PATH="):
-            destination_path = line.split("=", 1)[1].strip()
-
-    return Path(destination_path)
-
-
 def move_file(
     source_path: Path, destination_path: Path, is_overwritable: bool = False
 ) -> None:
