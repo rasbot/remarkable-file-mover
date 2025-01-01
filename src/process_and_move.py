@@ -69,44 +69,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Crop and resize an image to specific dimensions."
     )
-    parser.add_argument(
-        "--source", "-s", type=str, help="Path to input image", required=True
-    )
-    parser.add_argument(
-        "--position",
-        "-p",
-        choices=["center", "left", "right", "top", "bottom"],
-        default="center",
-        help="Position to crop from (default: center)",
-    )
-    parser.add_argument(
-        "--border",
-        "-b",
-        nargs="?",
-        type=int,
-        const=30,
-        help="Add white border with specified width (default: 30 if flag is used)",
-    )
-    parser.add_argument(
-        "--textfile",
-        "-t",
-        nargs="?",
-        type=str,
-        const="text_overlay.png",
-        help="File name of text overlay file, if used.",
-    )
-    parser.add_argument(
-        "--invert",
-        "-i",
-        action="store_true",
-        help="Invert the text color (black to white or white to black)",
-    )
-    parser.add_argument(
-        "--overwrite",
-        "-o",
-        action="store_true",
-        help="If passed, overwrite image if it exists.",
-    )
+    u.add_process_image_args(parser)
+    u.add_move_file_args(parser, require_source=False)  # Don't add source again
 
     args = parser.parse_args()
     input_file_path = args.source

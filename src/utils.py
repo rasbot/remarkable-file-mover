@@ -1,5 +1,6 @@
 """Utility functions for repo"""
 
+from argparse import ArgumentParser
 import os
 from enum import Enum
 from pathlib import Path
@@ -8,6 +9,64 @@ from typing import Any, Dict
 import yaml
 
 import src.constants as c
+
+
+def add_process_image_args(parser: ArgumentParser) -> None:
+    """Add arguments used by process_image.py to an existing parser."""
+    parser.add_argument(
+        "--source",
+        "-s",
+        type=str,
+        help="Path to unprocessed image source file",
+        required=True,
+    )
+    parser.add_argument(
+        "--position",
+        "-p",
+        choices=["center", "left", "right", "top", "bottom"],
+        default="center",
+        help="Position to crop from (default: center)",
+    )
+    parser.add_argument(
+        "--border",
+        "-b",
+        nargs="?",
+        type=int,
+        const=30,
+        help="Add white border with specified width (default: 30 if flag is used)",
+    )
+    parser.add_argument(
+        "--textfile",
+        "-t",
+        nargs="?",
+        type=str,
+        const="text_overlay.png",
+        help="File name of text overlay file, if used.",
+    )
+    parser.add_argument(
+        "--invert",
+        "-i",
+        action="store_true",
+        help="Invert the text color (black to white or white to black)",
+    )
+
+
+def add_move_file_args(parser: ArgumentParser, require_source: bool = True) -> None:
+    """Add arguments used by move_file.py to an existing parser."""
+    if require_source:
+        parser.add_argument(
+            "--source",
+            "-s",
+            type=str,
+            help="Path to unprocessed image source file",
+            required=True,
+        )
+    parser.add_argument(
+        "--overwrite",
+        "-o",
+        action="store_true",
+        help="Overwrite existing file if it exists",
+    )
 
 
 def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
