@@ -1,10 +1,11 @@
 """Utility functions for repo"""
 
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal, Optional, TypedDict
 
 import yaml
 
@@ -80,6 +81,73 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     """
     with open(yaml_config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+    return config
+
+
+class DimensionsDict(TypedDict):
+    """DimensionsDict class.
+
+    Args:
+        TypedDict (Dict): Width and height of final dimensions.
+    """
+
+    width: int
+    height: int
+
+
+class CoordinateDict(TypedDict):
+    """CoordinateDict class.
+
+    Args:
+        TypedDict (Dict): x and y positions.
+    """
+
+    x: int
+    y: int
+
+
+class TextPosition(Enum):
+    """Text Position enum.
+
+    Args:
+        Enum (str): Text position.
+    """
+
+    UPPER_LEFT = "upper_left"
+    UPPER_RIGHT = "upper_right"
+    MIDDLE_LEFT = "middle_left"
+    MIDDLE_RIGHT = "middle_right"
+    LOWER_LEFT = "lower_left"
+    LOWER_RIGHT = "lower_right"
+
+
+@dataclass
+class ProcessConfig:
+    image_path: Path = None
+    final_image_dims: DimensionsDict = None
+    img_config: Dict[str, int] = None
+    text_image_dims: DimensionsDict = None
+    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center"
+    border_width: Optional[int] = None
+    save_path: Optional[Path] = None
+    text_image_path: Optional[Path] = None
+    is_inverted: bool = False
+
+
+@dataclass
+class MoveConfig:
+    destination_path: Path = None
+    is_overwritable: bool = False
+
+
+def update_processconfig_from_args(
+    config: ProcessConfig, args: Namespace
+) -> ProcessConfig:
+    config.image_path = args.source
+    config.crop_position = args.position
+    config.border_width = args.border
+    config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
+    config.is_inverted = args.invert
     return config
 
 
