@@ -6,10 +6,16 @@ from typing import Dict, Literal
 
 from PIL import Image as PILImage
 
-from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
-                       TextPosition, add_process_image_args,
-                       get_image_dimensions_from_config, load_image_config,
-                       update_processconfig_from_args)
+from src.utils import (
+    CoordinateDict,
+    DimensionsDict,
+    ProcessConfig,
+    TextPosition,
+    add_process_image_args,
+    get_image_dimensions_from_config,
+    load_image_config,
+    update_processconfig_from_args,
+)
 
 
 def load_image(image_path: Path) -> PILImage:
@@ -117,7 +123,8 @@ def get_text_position(
             dict.
         text_image_dims (DimensionsDict): Text image dimensions dict.
         position (TextPosition): TextPosition enum.
-        side_buffer (int, optional): Buffer from the side in pixels. For left positions, moves image right.
+        side_buffer (int, optional): Buffer from the side in pixels.
+            For left positions, moves image right.
             For right positions, moves image left. Defaults to 0.
 
     Returns:
