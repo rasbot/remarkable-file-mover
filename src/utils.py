@@ -1,14 +1,15 @@
 """Utility functions for repo"""
 
-from argparse import ArgumentParser
 import os
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal, Optional, Tuple, TypedDict
 
 import yaml
 
-import src.constants as c
+from src.constants import IMAGE_CONFIG_PATH, TEXT_OVERLAY_IMAGE_DIR
 
 
 def add_process_image_args(parser: ArgumentParser) -> None:
@@ -80,6 +81,146 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     """
     with open(yaml_config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+    return config
+
+
+def load_image_config() -> Dict[str, int]:
+    """Load the image config dict and verify dimensions.
+
+    Raises:
+        ValueError: Raise if image dimensions are <=0.
+
+    Returns:
+        Dict[str, int]: Image config dict.
+    """
+    image_config = load_config_yaml(yaml_config_path=IMAGE_CONFIG_PATH)
+    width = image_config["target_img_dims"]["width"]
+    height = image_config["target_img_dims"]["height"]
+
+    if width is None or width <= 0 or height is None or height <= 0:
+        raise ValueError(
+            f"Target dimensions must be positive integers. Got {width} width and {height} height."
+        )
+    return image_config
+
+
+def get_image_dimensions_from_config(img_config: Dict[str, int]) -> Tuple[int, int]:
+    """Get width, height tuple from image config dict.
+
+    Args:
+        img_config (Dict[str, int]): Image config dict.
+
+    Returns:
+        Tuple[int, int]: width, height tuple.
+    """
+    width = img_config["target_img_dims"]["width"]
+    height = img_config["target_img_dims"]["height"]
+    return width, height
+
+
+class DimensionsDict(TypedDict):
+    """DimensionsDict class.
+
+    Args:
+        TypedDict (Dict): Width and height of final dimensions.
+    """
+
+    width: int
+    height: int
+
+
+class CoordinateDict(TypedDict):
+    """CoordinateDict class.
+
+    Args:
+        TypedDict (Dict): x and y positions.
+    """
+
+    x: int
+    y: int
+
+
+class TextPosition(Enum):
+    """Text Position enum.
+
+    Args:
+        Enum (str): Text position.
+    """
+
+    UPPER_LEFT = "upper_left"
+    UPPER_RIGHT = "upper_right"
+    MIDDLE_LEFT = "middle_left"
+    MIDDLE_RIGHT = "middle_right"
+    LOWER_LEFT = "lower_left"
+    LOWER_RIGHT = "lower_right"
+
+
+@dataclass
+class ProcessConfig:
+    """
+    image_path (Path): Full path to image file.
+        Defaults to None.
+    final_image_dims (DimensionsDict): Final image dimensions dict.
+        Defaults to None.
+    img_config (Dict[str, int]): Image config values.
+        Defaults to None.
+    text_image_dims (DimensionsDict): Text overlay image dimensions dict.
+        Defaults to None.
+    crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
+        where to crop the image relative to. Defaults to "center".
+    border_width (int, optional): Width of border.
+        Defaults to None.
+    save_path (Path, optional): Save path for file.
+        Defaults to None.
+    text_image_path (Path, optional): Path to text overlay file.
+        Defaults to None.
+    is_inverted (bool, optional): If True, invert the text image colors.
+        Defaults to False.
+    """
+
+    image_path: Path = None
+    final_image_dims: DimensionsDict = None
+    img_config: Dict[str, int] = None
+    text_image_dims: DimensionsDict = None
+    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center"
+    border_width: Optional[int] = None
+    save_path: Optional[Path] = None
+    text_image_path: Optional[Path] = None
+    is_inverted: bool = False
+
+
+@dataclass
+class MoveConfig:
+    """
+    destination_path (Path): Destination file path.
+        Defaults to None.
+    is_overwritable (bool, optional): If False, raise an exception if
+        the file exists. If True, write the file regardless.
+        Defaults to False.
+    """
+
+    destination_path: Path = None
+    is_overwritable: bool = False
+
+
+def update_processconfig_from_args(
+    config: ProcessConfig, args: Namespace
+) -> ProcessConfig:
+    """Update ProcessConfig instance with variables from
+    command line args Namespace.
+
+    Args:
+        config (ProcessConfig): Instance of ProcessConfig.
+        args (Namespace): Argparse namespace.
+
+    Returns:
+        ProcessConfig: Updated ProcessConfig instance.
+    """
+    config.image_path = Path(args.source)
+    config.crop_position = args.position
+    config.border_width = args.border
+    config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
+    config.is_inverted = args.invert
     return config
 
 
@@ -155,10 +296,12 @@ def get_text_overlay_path(text_overlay_filename: str):
     Returns:
         Path: Path of text overlay file.
     """
+    if text_overlay_filename is None:
+        return None
     text_overlay_filepath = None
     if text_overlay_filename:
         text_overlay_filepath = os.path.join(
-            c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
+            TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
         )
     if not os.path.exists(text_overlay_filepath):
         err_msg = (
