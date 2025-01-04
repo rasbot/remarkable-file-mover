@@ -50,6 +50,14 @@ def add_process_image_args(parser: ArgumentParser) -> None:
         action="store_true",
         help="Invert the text color (black to white or white to black)",
     )
+    parser.add_argument(
+        "--text_buffer",
+        "-tb",
+        nargs="?",
+        type=int,
+        const=50,
+        help="text image buffer value. will be applied to sides and/or top/bottom.",
+    )
 
 
 def add_move_file_args(parser: ArgumentParser, require_source: bool = True) -> None:
@@ -84,23 +92,45 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     return config
 
 
-def load_image_config() -> Dict[str, int]:
-    """Load the image config dict and verify dimensions.
+def validate_dimensions(
+    img_width: int, img_height: int, img_type: str = "target"
+) -> None:
+    """Validate image dimensions are > 0.
+
+    Args:
+        img_width (int): Config image width.
+        img_height (int): Config image height.
+        img_type (str, optional): Image type. Either "target"
+            or "text overlay".
+            Defaults to "target".
 
     Raises:
         ValueError: Raise if image dimensions are <=0.
+    """
+    if img_width is None or img_width <= 0 or img_height is None or img_height <= 0:
+        raise ValueError(
+            f"{img_type} dimensions must be positive integers. Got {img_width} width and {img_height} height."
+        )
+
+
+def load_image_config() -> Dict[str, int]:
+    """Load the image config dict and verify dimensions.
 
     Returns:
         Dict[str, int]: Image config dict.
     """
     image_config = load_config_yaml(yaml_config_path=IMAGE_CONFIG_PATH)
-    width = image_config["target_img_dims"]["width"]
-    height = image_config["target_img_dims"]["height"]
+    target_dims = image_config["target_img_dims"]
+    text_overlay_dims = image_config["text_overlay_img_dims"]
+    # validate target image dimensions
+    validate_dimensions(
+        img_width=target_dims["width"], img_height=target_dims["height"]
+    )
+    # validate text overlay image dimensions
+    validate_dimensions(
+        img_width=text_overlay_dims["width"], img_height=text_overlay_dims["height"]
+    )
 
-    if width is None or width <= 0 or height is None or height <= 0:
-        raise ValueError(
-            f"Target dimensions must be positive integers. Got {width} width and {height} height."
-        )
     return image_config
 
 
