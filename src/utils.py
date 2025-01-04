@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, TypedDict
+from typing import Any, Dict, Literal, Optional, Tuple, TypedDict
 
 import yaml
 
@@ -102,6 +102,20 @@ def load_image_config() -> Dict[str, int]:
             f"Target dimensions must be positive integers. Got {width} width and {height} height."
         )
     return image_config
+
+
+def get_image_dimensions_from_config(img_config: Dict[str, int]) -> Tuple[int, int]:
+    """Get width, height tuple from image config dict.
+
+    Args:
+        img_config (Dict[str, int]): Image config dict.
+
+    Returns:
+        Tuple[int, int]: width, height tuple.
+    """
+    width = img_config["target_img_dims"]["width"]
+    height = img_config["target_img_dims"]["height"]
+    return width, height
 
 
 class DimensionsDict(TypedDict):
