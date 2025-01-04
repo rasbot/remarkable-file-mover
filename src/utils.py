@@ -123,6 +123,27 @@ class TextPosition(Enum):
 
 @dataclass
 class ProcessConfig:
+    """
+    image_path (Path): Full path to image file.
+        Defaults to None.
+    final_image_dims (DimensionsDict): Final image dimensions dict.
+        Defaults to None.
+    img_config (Dict[str, int]): Image config values.
+        Defaults to None.
+    text_image_dims (DimensionsDict): Text overlay image dimensions dict.
+        Defaults to None.
+    crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
+        where to crop the image relative to. Defaults to "center".
+    border_width (int, optional): Width of border.
+        Defaults to None.
+    save_path (Path, optional): Save path for file.
+        Defaults to None.
+    text_image_path (Path, optional): Path to text overlay file.
+        Defaults to None.
+    is_inverted (bool, optional): If True, invert the text image colors.
+        Defaults to False.
+    """
+
     image_path: Path = None
     final_image_dims: DimensionsDict = None
     img_config: Dict[str, int] = None
@@ -136,6 +157,13 @@ class ProcessConfig:
 
 @dataclass
 class MoveConfig:
+    """
+    destination_path (Path): Destination file path.
+    is_overwritable (bool, optional): If False, raise an exception if
+        the file exists. If True, write the file regardless.
+        Defaults to False.
+    """
+
     destination_path: Path = None
     is_overwritable: bool = False
 
@@ -143,7 +171,17 @@ class MoveConfig:
 def update_processconfig_from_args(
     config: ProcessConfig, args: Namespace
 ) -> ProcessConfig:
-    config.image_path = args.source
+    """Update ProcessConfig instance with variables from
+    command line args Namespace.
+
+    Args:
+        config (ProcessConfig): Instance of ProcessConfig.
+        args (Namespace): Argparse namespace.
+
+    Returns:
+        ProcessConfig: Updated ProcessConfig instance.
+    """
+    config.image_path = Path(args.source)
     config.crop_position = args.position
     config.border_width = args.border
     config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
@@ -223,6 +261,8 @@ def get_text_overlay_path(text_overlay_filename: str):
     Returns:
         Path: Path of text overlay file.
     """
+    if text_overlay_filename is None:
+        return None
     text_overlay_filepath = None
     if text_overlay_filename:
         text_overlay_filepath = os.path.join(
