@@ -120,31 +120,39 @@ def load_image_config() -> Dict[str, int]:
         Dict[str, int]: Image config dict.
     """
     image_config = load_config_yaml(yaml_config_path=IMAGE_CONFIG_PATH)
-    target_dims = image_config["target_img_dims"]
-    text_overlay_dims = image_config["text_overlay_img_dims"]
+    image_width, image_height = get_image_dimensions_from_config(
+        img_config=image_config, img_type="target"
+    )
     # validate target image dimensions
-    validate_dimensions(
-        img_width=target_dims["width"], img_height=target_dims["height"]
-    )
+    validate_dimensions(img_width=image_width, img_height=image_height)
     # validate text overlay image dimensions
-    validate_dimensions(
-        img_width=text_overlay_dims["width"], img_height=text_overlay_dims["height"]
+    image_width, image_height = get_image_dimensions_from_config(
+        img_config=image_config, img_type="text_overlay"
     )
+    validate_dimensions(img_width=image_width, img_height=image_height)
 
     return image_config
 
 
-def get_image_dimensions_from_config(img_config: Dict[str, int]) -> Tuple[int, int]:
+def get_image_dimensions_from_config(
+    img_config: Dict[str, int], img_type: str = "target"
+) -> Tuple[int, int]:
     """Get width, height tuple from image config dict.
 
     Args:
         img_config (Dict[str, int]): Image config dict.
+        img_type (str, optional): "target" for target image, else it will
+            get dimensions for the text overlay image.
 
     Returns:
         Tuple[int, int]: width, height tuple.
     """
-    width = img_config["target_img_dims"]["width"]
-    height = img_config["target_img_dims"]["height"]
+    if img_type == "target":
+        dict_key = "target_img_dims"
+    else:
+        dict_key = "Text_overlay_img_dims"
+    width = img_config[dict_key]["width"]
+    height = img_config[dict_key]["height"]
     return width, height
 
 
