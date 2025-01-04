@@ -1,52 +1,16 @@
 """Process an image to set dimension by cropping, resizing, and adding an optional border."""
 
 import argparse
-import os
-from enum import Enum
 from pathlib import Path
-from typing import Dict, Literal, TypedDict
+from typing import Dict, Literal
 
 from PIL import Image as PILImage
 
 import src.constants as c
-import src.utils as u
-
-
-class DimensionsDict(TypedDict):
-    """DimensionsDict class.
-
-    Args:
-        TypedDict (Dict): Width and height of final dimensions.
-    """
-
-    width: int
-    height: int
-
-
-class CoordinateDict(TypedDict):
-    """CoordinateDict class.
-
-    Args:
-        TypedDict (Dict): x and y positions.
-    """
-
-    x: int
-    y: int
-
-
-class TextPosition(Enum):
-    """Text Position enum.
-
-    Args:
-        Enum (str): Text position.
-    """
-
-    UPPER_LEFT = "upper_left"
-    UPPER_RIGHT = "upper_right"
-    MIDDLE_LEFT = "middle_left"
-    MIDDLE_RIGHT = "middle_right"
-    LOWER_LEFT = "lower_left"
-    LOWER_RIGHT = "lower_right"
+from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
+                       TextPosition, add_process_image_args,
+                       get_text_overlay_path, load_config_yaml,
+                       update_processconfig_from_args)
 
 
 def load_image(image_path: Path) -> PILImage:
@@ -358,36 +322,26 @@ def save_image(processed_img: PILImage, output_path: Path) -> None:
 
 
 def process_image(
-    image_path: Path,
-    final_image_dims: DimensionsDict,
-    img_config: Dict[str, int],
-    crop_position: Literal["center", "left", "right", "top", "bottom"] = "center",
-    border_width: int = None,
-    save_path: Path = None,
-    text_image_path: Path = None,
-    is_inverted: bool = False,
+    process_config: ProcessConfig,
 ) -> PILImage:
     """Process image by cropping it, resizing it, and adding an optional white border.
 
     Args:
-        image_path (Path): Full path to image file.
-        final_image_dims (DimensionsDict): Final image dimensions dict.
-        img_config (Dict[str, int]): Image config values.
-        crop_position (Literal["center", "left", "right", "top", "bottom"], optional): Determine
-            where to crop the image relative to. Defaults to "center".
-        border_width (int, optional): Width of border.
-            Defaults to None.
-        save_path (Path, optional): Save path for file.
-            Defaults to None.
-        text_image_path (Path, optional): Path to text overlay file.
-            Defaults to None.
-        is_inverted (bool, optional): If True, invert the text image colors.
-            Defaults to False.
-
+        process_config (ProcessConfig): ProcessConfig instance.
 
     Returns:
         PILImage: Fully processed image.
     """
+    # unpack dataclass
+    final_image_dims = process_config.final_image_dims
+    border_width = process_config.border_width
+    image_path = process_config.image_path
+    crop_position = process_config.crop_position
+    img_config = process_config.img_config
+    text_image_path = process_config.text_image_path
+    save_path = process_config.save_path
+    is_inverted = process_config.is_inverted
+
     resized_dim_dict = get_dimensions(
         image_dims=final_image_dims,
         border_width=border_width,
@@ -440,39 +394,25 @@ def main():
     parser = argparse.ArgumentParser(
         description="Crop and resize an image to specific dimensions."
     )
-    u.add_process_image_args(parser=parser)
+    add_process_image_args(parser=parser)
 
     args = parser.parse_args()
-    input_file_path = Path(args.source)
-    position = args.position
-    border = args.border
-    text_overlay_filename = args.textfile
-    is_inverted = args.invert
 
-    text_overlay_filepath = u.get_text_overlay_path(
-        text_overlay_filename=text_overlay_filename
-    )
-
-    img_config = u.load_config_yaml(c.IMAGE_CONFIG_PATH)
+    img_config = load_config_yaml(c.IMAGE_CONFIG_PATH)
     width = img_config["target_img_dims"]["width"]
     height = img_config["target_img_dims"]["height"]
 
-    if width <= 0 or height <= 0:
+    if width is None or width <= 0 or height is None or height <= 0:
         raise ValueError(
             f"Target dimensions must be positive integers. Got {width} width and {height} height."
         )
 
+    process_config = ProcessConfig()
     final_image_dims_dict = DimensionsDict(width=width, height=height)
-
-    process_image(
-        image_path=input_file_path,
-        final_image_dims=final_image_dims_dict,
-        img_config=img_config,
-        crop_position=position,
-        border_width=border,
-        text_image_path=text_overlay_filepath,
-        is_inverted=is_inverted,
-    )
+    process_config.final_image_dims = final_image_dims_dict
+    process_config.img_config = img_config
+    process_config = update_processconfig_from_args(config=process_config, args=args)
+    process_image(process_config=process_config)
 
 
 if __name__ == "__main__":
