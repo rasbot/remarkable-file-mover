@@ -113,7 +113,7 @@ def get_text_position(
     background_image_dims: DimensionsDict,
     text_image_dims: DimensionsDict,
     position: TextPosition,
-    side_buffer: int = 0,
+    image_position_buffer: int = 0,
 ) -> CoordinateDict:
     """Get x and y coords for text overlay relative to desired
     position on background image.
@@ -123,21 +123,30 @@ def get_text_position(
             dict.
         text_image_dims (DimensionsDict): Text image dimensions dict.
         position (TextPosition): TextPosition enum.
-        side_buffer (int, optional): Buffer from the side in pixels.
+        image_position_buffer (int, optional): Buffer for the image position
+            in pixels.
             For left positions, moves image right.
-            For right positions, moves image left. Defaults to 0.
+            For right positions, moves image left.
+            For upper positions, moves image down.
+            For lower positions, moves image up.
+            Defaults to 0.
 
     Returns:
        CoordinateDict: x, y coords for pasting text overlay.
     """
-    # For left positions, x = buffer
-    # For right positions, x = background_width - text_width - buffer
-    x_left = side_buffer
-    x_right = background_image_dims["width"] - text_image_dims["width"] - side_buffer
+    x_left = image_position_buffer
+    x_right = (
+        background_image_dims["width"]
+        - text_image_dims["width"]
+        - image_position_buffer
+    )
 
-    y_upper = 0
+    y_upper_base = 0
     y_middle = (background_image_dims["height"] - text_image_dims["height"]) // 2
-    y_lower = background_image_dims["height"] - text_image_dims["height"]
+    y_lower_base = background_image_dims["height"] - text_image_dims["height"]
+
+    y_upper = y_upper_base + image_position_buffer
+    y_lower = y_lower_base - image_position_buffer
 
     position_coords = {
         TextPosition.UPPER_LEFT: CoordinateDict(x=x_left, y=y_upper),
@@ -216,7 +225,7 @@ def overlay_text_image(
         background_image_dims=background_dims_dict,
         text_image_dims=text_dims_dict,
         position=position,
-        side_buffer=img_config["text_img_buffer"],
+        image_position_buffer=img_config["text_img_buffer"],
     )
 
     # Get alpha channel for mask
@@ -328,6 +337,22 @@ def save_image(processed_img: PILImage, output_path: Path) -> None:
     print(f"Successfully processed image: {output_path}")
 
 
+def is_image_at_target_dims(
+    img: PILImage, target_width: int, target_height: int
+) -> bool:
+    """Check if an image has the target dimensions.
+
+    Args:
+        img (PILImage): Image to check dimensions.
+        target_width (int): Target width.
+        target_height (int): Target height.
+
+    Returns:
+        bool: True if dimensions match, False if either or both do not.
+    """
+    return img.size == (target_width, target_height)
+
+
 def process_image(
     process_config: ProcessConfig,
 ) -> PILImage:
@@ -371,17 +396,28 @@ def process_image(
             border_width=border_width,
             final_image_dims=final_image_dims,
         )
+
+    # target dimensions for text overlay image
+    text_img_width = img_config["text_overlay_img_dims"]["width"]
+    text_img_height = img_config["text_overlay_img_dims"]["height"]
     text_dim_dict = DimensionsDict(
-        width=img_config["text_overlay_img_dims"]["width"],
-        height=img_config["text_overlay_img_dims"]["height"],
+        width=text_img_width,
+        height=text_img_height,
     )
     if text_image_path:
         # load the text image
         text_img = load_image(text_image_path).convert("RGBA")
         if is_inverted:
             text_img = invert_text_color(image=text_img)
-        text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
-        text_img = resize_image(cropped_img=text_img, resized_dim_dict=text_dim_dict)
+        # check image size and only resize if needed
+        if not is_image_at_target_dims(
+            img=text_img, target_width=text_img_width, target_height=text_img_height
+        ):
+            print("resizing text overlay image...")
+            text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
+            text_img = resize_image(
+                cropped_img=text_img, resized_dim_dict=text_dim_dict
+            )
 
         processed_img = overlay_text_image(
             processed_img=processed_img,
