@@ -6,13 +6,8 @@ import shutil
 from pathlib import Path
 
 from src.constants import CONFIG_PATH
-from src.utils import (
-    ConfigKey,
-    ProtectedFile,
-    MoveConfig,
-    add_move_file_args,
-    get_config_path,
-)
+from src.utils import (ConfigKey, MoveConfig, ProtectedFile,
+                       add_move_file_args, get_config_path)
 
 
 def move_file(source_path: Path, move_config: MoveConfig) -> None:

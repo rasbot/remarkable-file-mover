@@ -6,17 +6,10 @@ from typing import Dict, Literal
 
 from PIL import Image as PILImage
 
-import src.constants as c
-from src.utils import (
-    CoordinateDict,
-    DimensionsDict,
-    ProcessConfig,
-    TextPosition,
-    add_process_image_args,
-    load_image_config,
-    get_image_dimensions_from_config,
-    update_processconfig_from_args,
-)
+from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
+                       TextPosition, add_process_image_args,
+                       get_image_dimensions_from_config, load_image_config,
+                       update_processconfig_from_args)
 
 
 def load_image(image_path: Path) -> PILImage:
