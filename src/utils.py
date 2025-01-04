@@ -92,7 +92,7 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     return config
 
 
-def validate_dimensions(
+def validate_config_dimensions(
     img_width: int, img_height: int, img_type: str = "target"
 ) -> None:
     """Validate image dimensions are > 0.
@@ -113,6 +113,22 @@ def validate_dimensions(
         )
 
 
+def validate_img_dimensions(
+    img_size: Tuple[int, int], target_size: Tuple[int, int]
+) -> None:
+    """Validate that image dimensions match target dimensions.
+
+    Args:
+        img_size (Tuple[int, int]): Tuple of image size (width, height).
+        target_size (Tuple[int, int]): Tuple of target image dimensions (width, height).
+
+    Raises:
+        ValueError: Raise if image dimensions do not match target dimensions.
+    """
+    if img_size != target_size:
+        raise ValueError(f"Text overlay must be {target_size[0]}x{target_size[1]}")
+
+
 def load_image_config() -> Dict[str, int]:
     """Load the image config dict and verify dimensions.
 
@@ -124,12 +140,12 @@ def load_image_config() -> Dict[str, int]:
         img_config=image_config, img_type="target"
     )
     # validate target image dimensions
-    validate_dimensions(img_width=image_width, img_height=image_height)
+    validate_config_dimensions(img_width=image_width, img_height=image_height)
     # validate text overlay image dimensions
     image_width, image_height = get_image_dimensions_from_config(
         img_config=image_config, img_type="text_overlay"
     )
-    validate_dimensions(img_width=image_width, img_height=image_height)
+    validate_config_dimensions(img_width=image_width, img_height=image_height)
 
     return image_config
 
