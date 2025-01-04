@@ -9,7 +9,7 @@ from typing import Any, Dict, Literal, Optional, TypedDict
 
 import yaml
 
-import src.constants as c
+from src.constants import IMAGE_CONFIG_PATH, TEXT_OVERLAY_IMAGE_DIR
 
 
 def add_process_image_args(parser: ArgumentParser) -> None:
@@ -82,6 +82,26 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     with open(yaml_config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
     return config
+
+
+def load_image_config() -> Dict[str, int]:
+    """Load the image config dict and verify dimensions.
+
+    Raises:
+        ValueError: Raise if image dimensions are <=0.
+
+    Returns:
+        Dict[str, int]: Image config dict.
+    """
+    image_config = load_config_yaml(yaml_config_path=IMAGE_CONFIG_PATH)
+    width = image_config["target_img_dims"]["width"]
+    height = image_config["target_img_dims"]["height"]
+
+    if width is None or width <= 0 or height is None or height <= 0:
+        raise ValueError(
+            f"Target dimensions must be positive integers. Got {width} width and {height} height."
+        )
+    return image_config
 
 
 class DimensionsDict(TypedDict):
@@ -159,6 +179,7 @@ class ProcessConfig:
 class MoveConfig:
     """
     destination_path (Path): Destination file path.
+        Defaults to None.
     is_overwritable (bool, optional): If False, raise an exception if
         the file exists. If True, write the file regardless.
         Defaults to False.
@@ -266,7 +287,7 @@ def get_text_overlay_path(text_overlay_filename: str):
     text_overlay_filepath = None
     if text_overlay_filename:
         text_overlay_filepath = os.path.join(
-            c.TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
+            TEXT_OVERLAY_IMAGE_DIR, text_overlay_filename
         )
     if not os.path.exists(text_overlay_filepath):
         err_msg = (
