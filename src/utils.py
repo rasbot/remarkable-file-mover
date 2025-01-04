@@ -159,6 +159,7 @@ class ProcessConfig:
 class MoveConfig:
     """
     destination_path (Path): Destination file path.
+        Defaults to None.
     is_overwritable (bool, optional): If False, raise an exception if
         the file exists. If True, write the file regardless.
         Defaults to False.
