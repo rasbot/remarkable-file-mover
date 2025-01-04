@@ -7,10 +7,16 @@ from typing import Dict, Literal
 from PIL import Image as PILImage
 
 import src.constants as c
-from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
-                       TextPosition, add_process_image_args,
-                       get_text_overlay_path, load_config_yaml,
-                       update_processconfig_from_args)
+from src.utils import (
+    CoordinateDict,
+    DimensionsDict,
+    ProcessConfig,
+    TextPosition,
+    add_process_image_args,
+    load_image_config,
+    get_image_dimensions_from_config,
+    update_processconfig_from_args,
+)
 
 
 def load_image(image_path: Path) -> PILImage:
@@ -188,8 +194,9 @@ def overlay_text_image(
         PIL Image with text overlaid.
     """
     # Verify dimensions
-    processed_width = img_config["target_img_dims"]["width"]
-    processed_height = img_config["target_img_dims"]["height"]
+    processed_width, processed_height = get_image_dimensions_from_config(
+        img_config=img_config
+    )
     if processed_img.size != (processed_width, processed_height):
         raise ValueError(
             f"Background image must be {processed_width}x{processed_height}"
@@ -398,14 +405,8 @@ def main():
 
     args = parser.parse_args()
 
-    img_config = load_config_yaml(c.IMAGE_CONFIG_PATH)
-    width = img_config["target_img_dims"]["width"]
-    height = img_config["target_img_dims"]["height"]
-
-    if width is None or width <= 0 or height is None or height <= 0:
-        raise ValueError(
-            f"Target dimensions must be positive integers. Got {width} width and {height} height."
-        )
+    img_config = load_image_config()
+    width, height = get_image_dimensions_from_config(img_config=img_config)
 
     process_config = ProcessConfig()
     final_image_dims_dict = DimensionsDict(width=width, height=height)
