@@ -22,8 +22,8 @@ def add_process_image_args(parser: ArgumentParser) -> None:
         required=True,
     )
     parser.add_argument(
-        "--position",
-        "-p",
+        "--crop_position",
+        "-cp",
         choices=["center", "left", "right", "top", "bottom"],
         default="center",
         help="Position to crop from (default: center)",
@@ -56,6 +56,20 @@ def add_process_image_args(parser: ArgumentParser) -> None:
         type=int,
         default=0,
         help="text image buffer value. will be applied to sides and/or top/bottom.",
+    )
+    parser.add_argument(
+        "--text_position",
+        "-tp",
+        choices=[
+            "upper_left",
+            "upper_right",
+            "middle_left",
+            "middle_right",
+            "lower_left",
+            "lower_right",
+        ],
+        default="lower_right",
+        help="Position to add text overlay image to (default: lower_right)",
     )
 
 
@@ -241,6 +255,14 @@ class ProcessConfig:
     text_image_path: Optional[Path] = None
     is_inverted: bool = False
     image_buffer: int = 0
+    text_position: Literal[
+        "upper_left",
+        "upper_right",
+        "middle_left",
+        "middle_right",
+        "lower_left",
+        "lower_right",
+    ] = "lower_right"
 
 
 @dataclass
@@ -271,11 +293,12 @@ def update_processconfig_from_args(
         ProcessConfig: Updated ProcessConfig instance.
     """
     config.image_path = Path(args.source)
-    config.crop_position = args.position
+    config.crop_position = args.crop_position
     config.border_width = args.border
     config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
     config.is_inverted = args.invert
     config.image_buffer = args.text_buffer
+    config.text_position = TextPosition(args.text_position)
     return config
 
 
