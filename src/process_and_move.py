@@ -5,19 +5,12 @@ import os
 
 from src.constants import CONFIG_PATH
 from src.move_file import move_file
-from src.process_image import DimensionsDict, get_processed_output_path, process_image
-from src.utils import (
-    ConfigKey,
-    MoveConfig,
-    ProcessConfig,
-    ProtectedFile,
-    add_move_file_args,
-    add_process_image_args,
-    get_config_path,
-    get_image_dimensions_from_config,
-    load_image_config,
-    update_processconfig_from_args,
-)
+from src.process_image import (DimensionsDict, get_processed_output_path,
+                               process_image)
+from src.utils import (ConfigKey, MoveConfig, ProcessConfig, ProtectedFile,
+                       add_move_file_args, add_process_image_args,
+                       get_config_path, get_image_dimensions_from_config,
+                       load_image_config, update_processconfig_from_args)
 
 
 def process_and_move(
