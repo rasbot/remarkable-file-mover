@@ -22,8 +22,8 @@ def add_process_image_args(parser: ArgumentParser) -> None:
         required=True,
     )
     parser.add_argument(
-        "--position",
-        "-p",
+        "--crop_position",
+        "-cp",
         choices=["center", "left", "right", "top", "bottom"],
         default="center",
         help="Position to crop from (default: center)",
@@ -49,6 +49,27 @@ def add_process_image_args(parser: ArgumentParser) -> None:
         "-i",
         action="store_true",
         help="Invert the text color (black to white or white to black)",
+    )
+    parser.add_argument(
+        "--text_buffer",
+        "-tb",
+        type=int,
+        default=0,
+        help="text image buffer value. will be applied to sides and/or top/bottom.",
+    )
+    parser.add_argument(
+        "--text_position",
+        "-tp",
+        choices=[
+            "upper_left",
+            "upper_right",
+            "middle_left",
+            "middle_right",
+            "lower_left",
+            "lower_right",
+        ],
+        default="lower_right",
+        help="Position to add text overlay image to (default: lower_right)",
     )
 
 
@@ -84,37 +105,83 @@ def load_config_yaml(yaml_config_path: Path) -> Dict[str, int]:
     return config
 
 
-def load_image_config() -> Dict[str, int]:
-    """Load the image config dict and verify dimensions.
+def validate_config_dimensions(
+    img_width: int, img_height: int, img_type: str = "target"
+) -> None:
+    """Validate image dimensions are > 0.
+
+    Args:
+        img_width (int): Config image width.
+        img_height (int): Config image height.
+        img_type (str, optional): Image type. Either "target"
+            or "text overlay".
+            Defaults to "target".
 
     Raises:
         ValueError: Raise if image dimensions are <=0.
+    """
+    if img_width is None or img_width <= 0 or img_height is None or img_height <= 0:
+        raise ValueError(
+            f"{img_type} dimensions must be positive integers. Got {img_width} width and {img_height} height."
+        )
+
+
+def validate_img_dimensions(
+    img_size: Tuple[int, int], target_size: Tuple[int, int]
+) -> None:
+    """Validate that image dimensions match target dimensions.
+
+    Args:
+        img_size (Tuple[int, int]): Tuple of image size (width, height).
+        target_size (Tuple[int, int]): Tuple of target image dimensions (width, height).
+
+    Raises:
+        ValueError: Raise if image dimensions do not match target dimensions.
+    """
+    if img_size != target_size:
+        raise ValueError(f"Text overlay must be {target_size[0]}x{target_size[1]}")
+
+
+def load_image_config() -> Dict[str, int]:
+    """Load the image config dict and verify dimensions.
 
     Returns:
         Dict[str, int]: Image config dict.
     """
     image_config = load_config_yaml(yaml_config_path=IMAGE_CONFIG_PATH)
-    width = image_config["target_img_dims"]["width"]
-    height = image_config["target_img_dims"]["height"]
+    image_width, image_height = get_image_dimensions_from_config(
+        img_config=image_config, img_type="target"
+    )
+    # validate target image dimensions
+    validate_config_dimensions(img_width=image_width, img_height=image_height)
+    # validate text overlay image dimensions
+    image_width, image_height = get_image_dimensions_from_config(
+        img_config=image_config, img_type="text_overlay"
+    )
+    validate_config_dimensions(img_width=image_width, img_height=image_height)
 
-    if width is None or width <= 0 or height is None or height <= 0:
-        raise ValueError(
-            f"Target dimensions must be positive integers. Got {width} width and {height} height."
-        )
     return image_config
 
 
-def get_image_dimensions_from_config(img_config: Dict[str, int]) -> Tuple[int, int]:
+def get_image_dimensions_from_config(
+    img_config: Dict[str, int], img_type: str = "target"
+) -> Tuple[int, int]:
     """Get width, height tuple from image config dict.
 
     Args:
         img_config (Dict[str, int]): Image config dict.
+        img_type (str, optional): "target" for target image, else it will
+            get dimensions for the text overlay image.
 
     Returns:
         Tuple[int, int]: width, height tuple.
     """
-    width = img_config["target_img_dims"]["width"]
-    height = img_config["target_img_dims"]["height"]
+    if img_type == "target":
+        dict_key = "target_img_dims"
+    else:
+        dict_key = "text_overlay_img_dims"
+    width = img_config[dict_key]["width"]
+    height = img_config[dict_key]["height"]
     return width, height
 
 
@@ -187,6 +254,15 @@ class ProcessConfig:
     save_path: Optional[Path] = None
     text_image_path: Optional[Path] = None
     is_inverted: bool = False
+    image_buffer: int = 0
+    text_position: Literal[
+        "upper_left",
+        "upper_right",
+        "middle_left",
+        "middle_right",
+        "lower_left",
+        "lower_right",
+    ] = "lower_right"
 
 
 @dataclass
@@ -217,10 +293,12 @@ def update_processconfig_from_args(
         ProcessConfig: Updated ProcessConfig instance.
     """
     config.image_path = Path(args.source)
-    config.crop_position = args.position
+    config.crop_position = args.crop_position
     config.border_width = args.border
     config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
     config.is_inverted = args.invert
+    config.image_buffer = args.text_buffer
+    config.text_position = TextPosition(args.text_position)
     return config
 
 

@@ -3,7 +3,5 @@ target_img_dims:
   height: 2160
 
 text_overlay_img_dims:
-  width: 810
-  height: 720
-
-text_img_buffer: 150
+  width: 800
+  height: 375

@@ -2,20 +2,14 @@
 
 import argparse
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Literal
 
 from PIL import Image as PILImage
 
-from src.utils import (
-    CoordinateDict,
-    DimensionsDict,
-    ProcessConfig,
-    TextPosition,
-    add_process_image_args,
-    get_image_dimensions_from_config,
-    load_image_config,
-    update_processconfig_from_args,
-)
+from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
+                       TextPosition, add_process_image_args,
+                       get_image_dimensions_from_config, load_image_config,
+                       update_processconfig_from_args)
 
 
 def load_image(image_path: Path) -> PILImage:
@@ -113,7 +107,7 @@ def get_text_position(
     background_image_dims: DimensionsDict,
     text_image_dims: DimensionsDict,
     position: TextPosition,
-    side_buffer: int = 0,
+    image_position_buffer: int = 0,
 ) -> CoordinateDict:
     """Get x and y coords for text overlay relative to desired
     position on background image.
@@ -123,21 +117,30 @@ def get_text_position(
             dict.
         text_image_dims (DimensionsDict): Text image dimensions dict.
         position (TextPosition): TextPosition enum.
-        side_buffer (int, optional): Buffer from the side in pixels.
+        image_position_buffer (int, optional): Buffer for the image position
+            in pixels.
             For left positions, moves image right.
-            For right positions, moves image left. Defaults to 0.
+            For right positions, moves image left.
+            For upper positions, moves image down.
+            For lower positions, moves image up.
+            Defaults to 0.
 
     Returns:
        CoordinateDict: x, y coords for pasting text overlay.
     """
-    # For left positions, x = buffer
-    # For right positions, x = background_width - text_width - buffer
-    x_left = side_buffer
-    x_right = background_image_dims["width"] - text_image_dims["width"] - side_buffer
+    x_left = image_position_buffer
+    x_right = (
+        background_image_dims["width"]
+        - text_image_dims["width"]
+        - image_position_buffer
+    )
 
-    y_upper = 0
+    y_upper_base = 0
     y_middle = (background_image_dims["height"] - text_image_dims["height"]) // 2
-    y_lower = background_image_dims["height"] - text_image_dims["height"]
+    y_lower_base = background_image_dims["height"] - text_image_dims["height"]
+
+    y_upper = y_upper_base + image_position_buffer
+    y_lower = y_lower_base - image_position_buffer
 
     position_coords = {
         TextPosition.UPPER_LEFT: CoordinateDict(x=x_left, y=y_upper),
@@ -147,7 +150,7 @@ def get_text_position(
         TextPosition.LOWER_LEFT: CoordinateDict(x=x_left, y=y_lower),
         TextPosition.LOWER_RIGHT: CoordinateDict(x=x_right, y=y_lower),
     }
-
+    print("DEBUG:", position_coords.keys())
     return position_coords[position]
 
 
@@ -179,7 +182,7 @@ def overlay_text_image(
     processed_img: PILImage,
     text_img: PILImage,
     position: TextPosition,
-    img_config: Dict[str, int],
+    image_buffer: int,
 ) -> PILImage:
     """Overlay text image onto a background image in the specified
     position.
@@ -188,24 +191,12 @@ def overlay_text_image(
         processed_img (PILImage): Processed image object to add text to.
         text_img (PILImage): Text overlay image (PNG with transparency)
         position (TextPosition): Position to place text from TextPosition enum.
-        img_config (Dict[str, int]): Image config dict.
+        image_buffer (int): buffer in pixels for image padding.
 
     Returns:
         PIL Image with text overlaid.
     """
-    # Verify dimensions
-    processed_width, processed_height = get_image_dimensions_from_config(
-        img_config=img_config
-    )
-    if processed_img.size != (processed_width, processed_height):
-        raise ValueError(
-            f"Background image must be {processed_width}x{processed_height}"
-        )
-    text_width = img_config["text_overlay_img_dims"]["width"]
-    text_height = img_config["text_overlay_img_dims"]["height"]
-    if text_img.size != (text_width, text_height):
-        raise ValueError(f"Text overlay must be {text_width}x{text_height}")
-
+    print("DEBUG:", position)
     background_dims_dict = DimensionsDict(
         width=processed_img.size[0], height=processed_img.size[1]
     )
@@ -216,7 +207,7 @@ def overlay_text_image(
         background_image_dims=background_dims_dict,
         text_image_dims=text_dims_dict,
         position=position,
-        side_buffer=img_config["text_img_buffer"],
+        image_position_buffer=image_buffer,
     )
 
     # Get alpha channel for mask
@@ -328,6 +319,22 @@ def save_image(processed_img: PILImage, output_path: Path) -> None:
     print(f"Successfully processed image: {output_path}")
 
 
+def is_image_at_target_dims(
+    img: PILImage, target_width: int, target_height: int
+) -> bool:
+    """Check if an image has the target dimensions.
+
+    Args:
+        img (PILImage): Image to check dimensions.
+        target_width (int): Target width.
+        target_height (int): Target height.
+
+    Returns:
+        bool: True if dimensions match, False if either or both do not.
+    """
+    return img.size == (target_width, target_height)
+
+
 def process_image(
     process_config: ProcessConfig,
 ) -> PILImage:
@@ -348,6 +355,8 @@ def process_image(
     text_image_path = process_config.text_image_path
     save_path = process_config.save_path
     is_inverted = process_config.is_inverted
+    image_buffer = process_config.image_buffer
+    text_position = process_config.text_position
 
     resized_dim_dict = get_dimensions(
         image_dims=final_image_dims,
@@ -371,23 +380,35 @@ def process_image(
             border_width=border_width,
             final_image_dims=final_image_dims,
         )
+
+    # target dimensions for text overlay image
+    text_img_width, text_img_height = get_image_dimensions_from_config(
+        img_config=img_config, img_type="text_overlay"
+    )
     text_dim_dict = DimensionsDict(
-        width=img_config["text_overlay_img_dims"]["width"],
-        height=img_config["text_overlay_img_dims"]["height"],
+        width=text_img_width,
+        height=text_img_height,
     )
     if text_image_path:
         # load the text image
         text_img = load_image(text_image_path).convert("RGBA")
         if is_inverted:
             text_img = invert_text_color(image=text_img)
-        text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
-        text_img = resize_image(cropped_img=text_img, resized_dim_dict=text_dim_dict)
+        # check image size and only resize if needed
+        if not is_image_at_target_dims(
+            img=text_img, target_width=text_img_width, target_height=text_img_height
+        ):
+            print("resizing text overlay image...")
+            text_img = crop_image(img=text_img, resized_dimensions_dict=text_dim_dict)
+            text_img = resize_image(
+                cropped_img=text_img, resized_dim_dict=text_dim_dict
+            )
 
         processed_img = overlay_text_image(
             processed_img=processed_img,
             text_img=text_img,
-            position=TextPosition.LOWER_RIGHT,
-            img_config=img_config,
+            position=text_position,
+            image_buffer=image_buffer,
         )
 
     if not save_path:
@@ -406,11 +427,12 @@ def main():
     args = parser.parse_args()
 
     img_config = load_image_config()
-    width, height = get_image_dimensions_from_config(img_config=img_config)
+    width, height = get_image_dimensions_from_config(
+        img_config=img_config, img_type="target"
+    )
 
     process_config = ProcessConfig()
-    final_image_dims_dict = DimensionsDict(width=width, height=height)
-    process_config.final_image_dims = final_image_dims_dict
+    process_config.final_image_dims = DimensionsDict(width=width, height=height)
     process_config.img_config = img_config
     process_config = update_processconfig_from_args(config=process_config, args=args)
     process_image(process_config=process_config)
