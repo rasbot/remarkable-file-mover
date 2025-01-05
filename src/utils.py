@@ -53,9 +53,8 @@ def add_process_image_args(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--text_buffer",
         "-tb",
-        nargs="?",
         type=int,
-        const=50,
+        default=0,
         help="text image buffer value. will be applied to sides and/or top/bottom.",
     )
 
@@ -166,7 +165,7 @@ def get_image_dimensions_from_config(
     if img_type == "target":
         dict_key = "target_img_dims"
     else:
-        dict_key = "Text_overlay_img_dims"
+        dict_key = "text_overlay_img_dims"
     width = img_config[dict_key]["width"]
     height = img_config[dict_key]["height"]
     return width, height
@@ -241,6 +240,7 @@ class ProcessConfig:
     save_path: Optional[Path] = None
     text_image_path: Optional[Path] = None
     is_inverted: bool = False
+    image_buffer: int = 0
 
 
 @dataclass
@@ -275,6 +275,7 @@ def update_processconfig_from_args(
     config.border_width = args.border
     config.text_image_path = get_text_overlay_path(text_overlay_filename=args.textfile)
     config.is_inverted = args.invert
+    config.image_buffer = args.text_buffer
     return config
 
 
