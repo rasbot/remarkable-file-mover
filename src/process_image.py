@@ -2,7 +2,7 @@
 
 import argparse
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Literal
 
 from PIL import Image as PILImage
 
@@ -156,7 +156,7 @@ def get_text_position(
         TextPosition.LOWER_LEFT: CoordinateDict(x=x_left, y=y_lower),
         TextPosition.LOWER_RIGHT: CoordinateDict(x=x_right, y=y_lower),
     }
-
+    print("DEBUG:", position_coords.keys())
     return position_coords[position]
 
 
@@ -202,6 +202,7 @@ def overlay_text_image(
     Returns:
         PIL Image with text overlaid.
     """
+    print("DEBUG:", position)
     background_dims_dict = DimensionsDict(
         width=processed_img.size[0], height=processed_img.size[1]
     )
@@ -361,6 +362,7 @@ def process_image(
     save_path = process_config.save_path
     is_inverted = process_config.is_inverted
     image_buffer = process_config.image_buffer
+    text_position = process_config.text_position
 
     resized_dim_dict = get_dimensions(
         image_dims=final_image_dims,
@@ -411,7 +413,7 @@ def process_image(
         processed_img = overlay_text_image(
             processed_img=processed_img,
             text_img=text_img,
-            position=TextPosition.LOWER_RIGHT,
+            position=text_position,
             image_buffer=image_buffer,
         )
 
