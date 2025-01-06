@@ -140,6 +140,8 @@ def get_text_position(
         - text_image_dims["width"]
         - image_position_buffer
     )
+    # Calculate center x-position
+    x_middle = (background_image_dims["width"] - text_image_dims["width"]) // 2
 
     y_upper_base = 0
     y_middle = (background_image_dims["height"] - text_image_dims["height"]) // 2
@@ -150,13 +152,15 @@ def get_text_position(
 
     position_coords = {
         TextPosition.UPPER_LEFT: CoordinateDict(x=x_left, y=y_upper),
+        TextPosition.UPPER_MIDDLE: CoordinateDict(x=x_middle, y=y_upper),
         TextPosition.UPPER_RIGHT: CoordinateDict(x=x_right, y=y_upper),
         TextPosition.MIDDLE_LEFT: CoordinateDict(x=x_left, y=y_middle),
+        TextPosition.MIDDLE_MIDDLE: CoordinateDict(x=x_middle, y=y_middle),
         TextPosition.MIDDLE_RIGHT: CoordinateDict(x=x_right, y=y_middle),
         TextPosition.LOWER_LEFT: CoordinateDict(x=x_left, y=y_lower),
+        TextPosition.LOWER_MIDDLE: CoordinateDict(x=x_middle, y=y_lower),
         TextPosition.LOWER_RIGHT: CoordinateDict(x=x_right, y=y_lower),
     }
-    print("DEBUG:", position_coords.keys())
     return position_coords[position]
 
 
