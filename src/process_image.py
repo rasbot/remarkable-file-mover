@@ -6,10 +6,16 @@ from typing import Literal
 
 from PIL import Image as PILImage
 
-from src.utils import (CoordinateDict, DimensionsDict, ProcessConfig,
-                       TextPosition, add_process_image_args,
-                       get_image_dimensions_from_config, load_image_config,
-                       update_processconfig_from_args)
+from src.utils import (
+    CoordinateDict,
+    DimensionsDict,
+    ProcessConfig,
+    TextPosition,
+    add_process_image_args,
+    get_image_dimensions_from_config,
+    load_image_config,
+    update_processconfig_from_args,
+)
 
 
 def load_image(image_path: Path) -> PILImage:
@@ -134,6 +140,8 @@ def get_text_position(
         - text_image_dims["width"]
         - image_position_buffer
     )
+    # Calculate center x-position
+    x_middle = (background_image_dims["width"] - text_image_dims["width"]) // 2
 
     y_upper_base = 0
     y_middle = (background_image_dims["height"] - text_image_dims["height"]) // 2
@@ -144,13 +152,15 @@ def get_text_position(
 
     position_coords = {
         TextPosition.UPPER_LEFT: CoordinateDict(x=x_left, y=y_upper),
+        TextPosition.UPPER_MIDDLE: CoordinateDict(x=x_middle, y=y_upper),
         TextPosition.UPPER_RIGHT: CoordinateDict(x=x_right, y=y_upper),
         TextPosition.MIDDLE_LEFT: CoordinateDict(x=x_left, y=y_middle),
+        TextPosition.MIDDLE_MIDDLE: CoordinateDict(x=x_middle, y=y_middle),
         TextPosition.MIDDLE_RIGHT: CoordinateDict(x=x_right, y=y_middle),
         TextPosition.LOWER_LEFT: CoordinateDict(x=x_left, y=y_lower),
+        TextPosition.LOWER_MIDDLE: CoordinateDict(x=x_middle, y=y_lower),
         TextPosition.LOWER_RIGHT: CoordinateDict(x=x_right, y=y_lower),
     }
-    print("DEBUG:", position_coords.keys())
     return position_coords[position]
 
 
@@ -196,7 +206,6 @@ def overlay_text_image(
     Returns:
         PIL Image with text overlaid.
     """
-    print("DEBUG:", position)
     background_dims_dict = DimensionsDict(
         width=processed_img.size[0], height=processed_img.size[1]
     )
@@ -420,7 +429,8 @@ def process_image(
 def main():
     """Main function of the script."""
     parser = argparse.ArgumentParser(
-        description="Crop and resize an image to specific dimensions."
+        description="Crop and resize an image to specific dimensions.",
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     add_process_image_args(parser=parser)
 
