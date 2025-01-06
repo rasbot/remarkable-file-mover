@@ -59,6 +59,10 @@ There are 3 parts to the scripts. These are:
 
 To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/process_image.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
 
+### Image config file
+
+There is an image config file that has a few values used for either the main image being processed, as well as an optional text image. This config file is located at `config/image_config.yaml`. The image dimensions for the processed image will be the dimensions of the remarkable screen. The `text_overlay_img_dims` are the size of the text image that can be added to the final processed image. More on that later.
+
 ### Image processing
 
 Running `src/process_image.py` will do the following:
@@ -75,15 +79,29 @@ to see the list of command line args you can use.
 
 The args are:
 - `--source`, `-s`: The full path to the image. In Windows, you can copy this from Windows explorer by right clicking on an image and selecting "Copy as path", or by using "Ctrl + Shift + c". (ex: `-s "C:\Users\ongo\Pictures\my_image.png"`)
-- `--width`, `-w`: Target width of the image (width of the reMarkable screen in pixels, defaults to 1620). (ex: `-w 1200`)
-- `--height`, `-h`: Target height of the image (height of the reMarkable screen in pixels, defaults to 2160). (ex: `-h 1920`)
-- `--position`, `-p`: Position to anchor to when cropping the image. (ex: `-p left`) Options are:
+- `--crop_position`, `-cp`: Position to anchor to when cropping the image. (ex: `-p left`) Options are:
   - "center": Crops height / width from the center of the image.
   - "left": Crops height / width from the left of the image.
   - "right": Crops height / width from the right of the image.
   - "top": Crops height / width from the top of the image.
   - "bottom": Crops height / width from the bottom of the image.
 - `--border`, '`-b`: Add a border to the image. This is a flag and if passed will add a default border of 30 pixels (ex: `-b`) or can pass a border thickness (ex: `-b 50`).
+- `--textfile`, `-t`: The file name of the text overlay file. This is a
+flag and if passed will add the text file on the final image, defaulting to the `text_overlay.png` file. You can add a file name after the flag to
+use a different image (must be in the `text_overlay_images` diectory)
+such as `my_cool_text_image.png`.
+- `--invert`, `-i`: A flag that will invert the text overlay image colors.
+- `--text_buffer`, `-tb`: Adds a buffer to the sides of the text file placement. Defaults to 0.
+- `--text_position`, `-tp`: You can set the position of the text image. Options are:
+  - "upper_left": The text image will be placed in the upper left area of the processed image.
+  - "upper_middle": The text image will be placed in the upper middle area of the processed image.
+  - "upper_right": The text image will be placed in the upper right area of the processed image.
+  - "middle_left": The text image will be placed in the middle left area of the processed image.
+  - "middle_middle": The text image will be placed in the center of the processed image.
+  - "middle_right": The text image will be placed in the middle right area of the processed image.
+  - "lower_left": The text image will be placed in the lower left area of the processed image.
+  - "lower_middle": The text image will be placed in the lower middle area of the processed image.
+  - "lower_right": The text image will be placed in the lower right area of the processed image.
 
 #### Image Comparison
 
