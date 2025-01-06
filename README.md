@@ -106,7 +106,7 @@ such as `my_cool_text_image.png`.
 #### Image Comparison
 
 <p align="center">
-  <img src="images/ongo.png" alt="Original Image" height="400">
+  <img src="readme_images/ongo.png" alt="Original Image" height="400">
   <br>
   <b>Original Image</b>
 </p>
@@ -114,22 +114,22 @@ such as `my_cool_text_image.png`.
 <table>
   <tr>
     <td align="center">
-      <img src="images/ongo_processed_center.png" alt="Center Cropped Image" height="400"><br>
+      <img src="readme_images/ongo_processed_center.png" alt="Center Cropped Image" height="400"><br>
       <b>Center Cropped Image</b>
     </td>
     <td align="center">
-      <img src="images/ongo_processed_left.png" alt="Left Cropped Image" height="400" width=auto><br>
+      <img src="readme_images/ongo_processed_left.png" alt="Left Cropped Image" height="400" width=auto><br>
       <b>Left Cropped Image</b>
     </td>
     <td align="center">
-      <img src="images/ongo_processed_right.png" alt="Right Cropped Image" height="400"><br>
+      <img src="readme_images/ongo_processed_right.png" alt="Right Cropped Image" height="400"><br>
       <b>Right Cropped Image</b>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <img src="images/ongo_processed_border.png" alt="Cropped Image with Border" height="400">
+  <img src="readme_images/ongo_processed_border.png" alt="Cropped Image with Border" height="400">
   <br>
   <b>Cropped Image with Border</b>
 </p>
