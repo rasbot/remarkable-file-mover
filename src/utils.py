@@ -9,7 +9,14 @@ from typing import Any, Dict, Literal, Optional, Tuple, TypedDict
 
 import yaml
 
-from src.constants import IMAGE_CONFIG_PATH, TEXT_OVERLAY_IMAGE_DIR
+from src.constants import (
+    IMAGE_CONFIG_PATH,
+    TEXT_OVERLAY_IMAGE_DIR,
+    IMG_POSITIONS,
+    IMG_POSITIONS_HELP,
+    TEXT_POSITIONS,
+    TEXT_POSITIONS_HELP,
+)
 
 
 def add_process_image_args(parser: ArgumentParser) -> None:
@@ -24,9 +31,10 @@ def add_process_image_args(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--crop_position",
         "-cp",
-        choices=["center", "left", "right", "top", "bottom"],
+        choices=IMG_POSITIONS,
         default="center",
-        help="Position to crop from (default: center)",
+        help=IMG_POSITIONS_HELP,
+        metavar="CROP_POSITION",
     )
     parser.add_argument(
         "--border",
@@ -60,16 +68,10 @@ def add_process_image_args(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--text_position",
         "-tp",
-        choices=[
-            "upper_left",
-            "upper_right",
-            "middle_left",
-            "middle_right",
-            "lower_left",
-            "lower_right",
-        ],
+        choices=TEXT_POSITIONS,
         default="lower_right",
-        help="Position to add text overlay image to (default: lower_right)",
+        help=TEXT_POSITIONS_HELP,
+        metavar="TEXT_POSITION",
     )
 
 
