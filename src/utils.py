@@ -217,10 +217,13 @@ class TextPosition(Enum):
     """
 
     UPPER_LEFT = "upper_left"
+    UPPER_MIDDLE = "upper_middle"
     UPPER_RIGHT = "upper_right"
     MIDDLE_LEFT = "middle_left"
+    MIDDLE_MIDDLE = "middle_middle"
     MIDDLE_RIGHT = "middle_right"
     LOWER_LEFT = "lower_left"
+    LOWER_MIDDLE = "lower_middle"
     LOWER_RIGHT = "lower_right"
 
 
