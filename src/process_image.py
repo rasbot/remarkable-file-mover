@@ -206,7 +206,6 @@ def overlay_text_image(
     Returns:
         PIL Image with text overlaid.
     """
-    print("DEBUG:", position)
     background_dims_dict = DimensionsDict(
         width=processed_img.size[0], height=processed_img.size[1]
     )
