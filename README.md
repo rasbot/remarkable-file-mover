@@ -137,9 +137,14 @@ such as `my_cool_text_image.png`.
 #### Example usage
 
 ```bash
-$ python .\src\process_image.py -s "C:\Users\ongo\Pictures\my_image.png" -p right -b 45
+$ python .\src\process_image.py -s "C:\Users\ongo\Pictures\my_image.png" -t -tp middle_top
 ```
-will crop the image with respect to the right of the image and add a 45 pixel border around the image.
+will crop the image (`-s` path) with respect to the center of the image (default behavior). It will add a text overlay image (`-t` flag) that loads the default image at `text_overlay_images/text_overlay.png` and places it at the top of the image in the middle (`-tp` arg)
+
+```bash
+$ python .\src\process_image.py -s "C:\Users\ongo\Pictures\my_image.png" -cp right -b 45 -t "my_text_image.png" -i -tb 20 -tp middle_left
+```
+will crop the image (`-s` path) with respect to the right of the image (`-cp` arg) and add a 45 pixel border (`-b` arg) around the image. It will add an inverted (`-i` flag) text overlay image (specifying an image file uses that specific one) and will add a 20 pixel buffer to the edges of the image (`-tb` arg) and place it in the middle of the background image on the left side (-`tp` arg).
 
 ### Copy / rename the file / move to specific location
 
