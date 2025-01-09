@@ -59,17 +59,23 @@ There are 3 parts to the scripts. These are:
 
 To do the image processing and move the image file, run the `src/process_and_move.py` script. This runs the `src/process_image.py` script that processes the image, and the `src/move_file.py` script that copies / renames the image to a source destination.
 
-### Image config file
+
+### Image processing
+
+#### Image config file
 
 There is an image config file that has a few values used for either the main image being processed, as well as an optional text image. This config file is located at `config/image_config.yaml`. The image dimensions for the processed image will be the dimensions of the remarkable screen. The `text_overlay_img_dims` are the size of the text image that can be added to the final processed image. More on that later.
 
-### Image processing
+#### process_image.py script
 
 Running `src/process_image.py` will do the following:
 
 - crop it to the aspect ratio of the reMarkable tablet
 - resize the image to the resolution of the reMarkable tablet
 - can add a white border around the image if you want
+- can add a text overlay image
+  - can position the text image around the main image
+  - can invert the color of the text image
 
 In the terminal, run
 ```bash
