@@ -137,11 +137,11 @@ such as `my_cool_text_image.png`.
 <table>
   <tr>
     <td align="center">
-      <img src="readme_images/ongo_processed_top_text.png" alt="Text on top" width="400"><br>
+      <img src="readme_images/ongo_processed_top_text.png" alt="Text on top" height="350"><br>
       <b>Overlay text on top</b>
     </td>
     <td align="center">
-      <img src="readme_images/ongo_processed_bottom_text.png" alt="Text on bottom" width="400"><br>
+      <img src="readme_images/ongo_processed_bottom_text.png" alt="Text on bottom" height="350"><br>
       <b>Overlay text on bottom</b>
     </td>
   </tr>
