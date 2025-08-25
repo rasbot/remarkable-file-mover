@@ -27,7 +27,7 @@ This specific implementation uses PuTTY to SSH into the reMarkable device. Go to
 
 ### Create a config txt file
 
-In the root directory of the repo, add a new text file and rename it to `remarkable_config.txt`. This file will be hidden (greyed out) since it was added to `.gitignore`, and since this will contain your login info for the reMarkable, keep in mind of this and do not share your PASSWORD.
+In the `config/` directory of the repo, add a new text file and rename it to `remarkable_config.txt`. This file will be hidden (greyed out) since it was added to `.gitignore`, and since this will contain your login info for the reMarkable, keep in mind of this and do not share your PASSWORD.
 
 In the text file, you will need to define some parameters:
 ```
