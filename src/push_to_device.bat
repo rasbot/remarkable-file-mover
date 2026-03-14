@@ -63,6 +63,24 @@ rem Attempt file transfer
 "%PUTTY_PATH%\pscp.exe" -pw %REMARKABLE_PASSWORD% -P 22 "%SOURCE_PATH%" root@%REMARKABLE_IP%:%DESTINATION_PATH%
 if %ERRORLEVEL% EQU 0 (
     echo Transfer completed successfully
+
+    rem Update SleepScreenPath in xochitl.conf so the custom screen survives updates
+    echo Updating xochitl.conf on device...
+    "%PUTTY_PATH%\plink.exe" -batch -pw %REMARKABLE_PASSWORD% -P 22 root@%REMARKABLE_IP% "if grep -q '^SleepScreenPath=' /home/root/.config/remarkable/xochitl.conf; then sed -i 's|^SleepScreenPath=.*|SleepScreenPath=%DESTINATION_PATH%|' /home/root/.config/remarkable/xochitl.conf; else sed -i '/^\[General\]/a SleepScreenPath=%DESTINATION_PATH%' /home/root/.config/remarkable/xochitl.conf; fi"
+    if %ERRORLEVEL% EQU 0 (
+        echo xochitl.conf updated
+
+        rem Restart xochitl so the config change takes effect
+        echo Restarting xochitl service...
+        "%PUTTY_PATH%\plink.exe" -batch -pw %REMARKABLE_PASSWORD% -P 22 root@%REMARKABLE_IP% "systemctl restart xochitl"
+        if %ERRORLEVEL% EQU 0 (
+            echo xochitl service restarted
+        ) else (
+            echo Warning: failed to restart xochitl service - restart the tablet manually
+        )
+    ) else (
+        echo Warning: failed to update xochitl.conf - custom screen may revert after updates
+    )
 ) else (
     echo Failed to transfer file
 )
